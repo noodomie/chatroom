@@ -1,5 +1,5 @@
 {
-  "name": "chat-app",
+  "name": "chatroom",
   "version": "1.0.0",
   "main": "server.js",
   "dependencies": {
