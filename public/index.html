@@ -383,6 +383,72 @@
     let touchStartX = 0;
     let touchEndX = 0;
 
+    // ==========================================
+    // SES MOTORU (Web Audio API)
+    // ==========================================
+    let audioCtx = null;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    // 1. Gelen Mesaj Sesi (8-Bit Çift Ton Bip)
+    function playMessageSound() {
+        try {
+            initAudio();
+            const now = audioCtx.currentTime;
+
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.type = 'square';
+            osc1.frequency.setValueAtTime(523.25, now);
+            gain1.gain.setValueAtTime(0.08, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.08);
+
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.type = 'square';
+            osc2.frequency.setValueAtTime(783.99, now + 0.07);
+            gain2.gain.setValueAtTime(0.08, now + 0.07);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.start(now + 0.07);
+            osc2.stop(now + 0.18);
+        } catch (e) {}
+    }
+
+    // 2. Buton Tıklama Sesi (Kısa Retro Tık)
+    function playClickSound() {
+        try {
+            initAudio();
+            const now = audioCtx.currentTime;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(120, now + 0.03);
+
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.03);
+        } catch (e) {}
+    }
+
     function triggerVibration() {
         if (navigator.vibrate) {
             navigator.vibrate(25);
@@ -438,11 +504,13 @@
     }
 
     edgeHandle.onclick = () => {
+        playClickSound();
         triggerVibration();
         openDrawer();
     };
 
     closeDrawerBtn.onclick = () => {
+        playClickSound();
         triggerVibration();
         closeDrawer();
     };
@@ -470,6 +538,7 @@
     }
 
     function joinChat() {
+        playClickSound();
         triggerVibration();
         const name = usernameInput.value.trim();
         const regex = /^[a-zA-Z]{3,16}$/;
@@ -528,6 +597,7 @@
         const now = Date.now();
         if (now - lastSendTime < 1000) return;
 
+        playClickSound();
         triggerVibration();
         lastSendTime = now;
 
@@ -551,6 +621,7 @@
 
     socket.on('chat message', (data) => {
         renderMessage(data);
+        playMessageSound();
     });
 
     socket.on('user list update', (list) => {
@@ -574,6 +645,7 @@
             }
 
             item.onclick = () => {
+                playClickSound();
                 if (u !== myUsername) {
                     msgInput.value = '@' + u + ' ' + msgInput.value;
                     closeDrawer();
