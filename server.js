@@ -8,6 +8,7 @@ const io = new Server(server);
 
 app.use(express.static('public'));
 
+// socket.id -> { name: string, device: string }
 const users = {};
 const lastMessageTime = {};
 
@@ -29,14 +30,24 @@ function broadcastUserList() {
 }
 
 io.on('connection', (socket) => {
-    socket.on('join', (username, callback) => {
+    socket.on('join', (data, callback) => {
+        let username = '';
+        let device = 'desktop';
+
+        if (typeof data === 'object' && data !== null) {
+            username = data.name || '';
+            device = data.device || 'desktop';
+        } else {
+            username = data;
+        }
+
         if (!isValidUsername(username)) {
             callback({ success: false, error: 'Invalid Name' });
             return;
         }
 
         const isTaken = Object.values(users).some(
-            u => u.toLowerCase() === username.toLowerCase()
+            u => u.name.toLowerCase() === username.toLowerCase()
         );
 
         if (isTaken) {
@@ -44,7 +55,7 @@ io.on('connection', (socket) => {
             return;
         }
 
-        users[socket.id] = username;
+        users[socket.id] = { name: username, device: device };
         lastMessageTime[socket.id] = 0;
         callback({ success: true });
 
@@ -58,8 +69,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat message', (data) => {
-        const username = users[socket.id];
-        if (!username) return;
+        const userObj = users[socket.id];
+        if (!userObj) return;
 
         const now = Date.now();
         if (lastMessageTime[socket.id] && now - lastMessageTime[socket.id] < 1000) {
@@ -77,7 +88,8 @@ io.on('connection', (socket) => {
         if (text.trim() !== '') {
             socket.broadcast.emit('chat message', {
                 type: 'user',
-                user: username,
+                user: userObj.name,
+                device: userObj.device,
                 text: text,
                 time: getTimestamp()
             });
@@ -89,8 +101,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        const username = users[socket.id];
-        if (username) {
+        const userObj = users[socket.id];
+        if (userObj) {
+            const username = userObj.name;
             delete users[socket.id];
             delete lastMessageTime[socket.id];
             broadcastUserList();
