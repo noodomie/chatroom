@@ -131,14 +131,23 @@
         .edge-handle {
             position: absolute;
             right: 0;
+            top: 0;
+            width: 16px;
+            height: 100%;
+            background: transparent;
+            z-index: 5;
+            cursor: pointer;
+        }
+        .edge-handle::after {
+            content: '';
+            position: absolute;
+            right: 0;
             top: 50%;
             transform: translateY(-50%);
             width: 3px;
             height: 48px;
             background: rgba(255, 255, 255, 0.25);
             border-radius: 2px 0 0 2px;
-            z-index: 5;
-            cursor: pointer;
         }
         #messages {
             flex: 1;
@@ -157,6 +166,17 @@
             font-size: 15px;
             line-height: 1.4;
             position: relative;
+        }
+        .msg-reply-quote {
+            background: #151515;
+            border-left: 2px solid #fff;
+            padding: 4px 8px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: #aaa;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .msg-options-btn {
             position: absolute;
@@ -240,12 +260,38 @@
             border-top: 1px solid #fff;
             flex-shrink: 0;
             width: 100%;
-            padding-top: 8px;
+        }
+        .reply-preview {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #111;
+            border-bottom: 1px solid #333;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #ccc;
+        }
+        .reply-preview-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .reply-preview-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 2px 6px;
+        }
+        .reply-preview-close:hover {
+            color: #fff;
         }
         .input-area {
             display: flex;
             gap: 8px;
             width: 100%;
+            padding-top: 8px;
         }
         .input-area input {
             flex: 1;
@@ -374,6 +420,10 @@
         <div id="messages"></div>
 
         <div class="input-area-wrapper">
+            <div id="reply-preview" class="reply-preview hidden">
+                <div class="reply-preview-content" id="reply-preview-text"></div>
+                <button class="reply-preview-close" id="reply-preview-close-btn">X</button>
+            </div>
             <div class="input-area">
                 <input type="text" id="msg-input" placeholder="Type a message..." maxlength="500" autocomplete="off" spellcheck="false">
                 <button class="btn send-btn" id="send-btn">SEND</button>
@@ -398,12 +448,11 @@
     let myUsername = '';
     let lastSendTime = 0;
     let touchStartX = 0;
+    let touchStartY = 0;
     let touchEndX = 0;
     let activeMenu = null;
+    let currentReplyData = null;
 
-    // ==========================================
-    // SES MOTORU (Web Audio API)
-    // ==========================================
     let audioCtx = null;
 
     function initAudio() {
@@ -415,7 +464,6 @@
         }
     }
 
-    // 1. Buton Tıklama Sesi
     function playClickSound() {
         try {
             initAudio();
@@ -437,7 +485,6 @@
         } catch (e) {}
     }
 
-    // 2. Mesaj Gönderme Sesi
     function playSendSound() {
         try {
             initAudio();
@@ -459,7 +506,6 @@
         } catch (e) {}
     }
 
-    // 3. Mesaj Gelme Sesi
     function playMessageSound() {
         try {
             initAudio();
@@ -489,7 +535,6 @@
         } catch (e) {}
     }
 
-    // 4. Birinin Katılması Sesi
     function playJoinSound() {
         try {
             initAudio();
@@ -511,7 +556,6 @@
         } catch (e) {}
     }
 
-    // 5. Birinin Ayrılması Sesi
     function playLeaveSound() {
         try {
             initAudio();
@@ -582,6 +626,28 @@
     const userListDiv = document.getElementById('user-list');
     const pingInfo = document.getElementById('ping-info');
     const edgeHandle = document.getElementById('edge-handle');
+    const replyPreview = document.getElementById('reply-preview');
+    const replyPreviewText = document.getElementById('reply-preview-text');
+    const replyPreviewCloseBtn = document.getElementById('reply-preview-close-btn');
+
+    function setReply(user, text) {
+        currentReplyData = { user: user, text: text };
+        replyPreviewText.innerHTML = 'Replying to <strong>' + escapeHtml(user) + '</strong>: ' + escapeHtml(text);
+        replyPreview.classList.remove('hidden');
+        msgInput.focus();
+    }
+
+    function clearReply() {
+        currentReplyData = null;
+        replyPreview.classList.add('hidden');
+        replyPreviewText.innerHTML = '';
+    }
+
+    replyPreviewCloseBtn.onclick = () => {
+        playClickSound();
+        triggerVibration();
+        clearReply();
+    };
 
     function openDrawer() {
         closeActiveMenu();
@@ -611,16 +677,12 @@
         closeDrawer();
     };
 
-    // Tüm Dokunma ve Tıklamalarda Açık Menüleri Kapatma
     document.addEventListener('click', (e) => {
         if (activeMenu && !activeMenu.contains(e.target) && !e.target.classList.contains('msg-options-btn')) {
             closeActiveMenu();
         }
     });
 
-    // ==========================================
-    // KLAVYELER İÇİN KISAYOLLAR
-    // ==========================================
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeActiveMenu();
@@ -629,17 +691,25 @@
     });
 
     document.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
+        if (e.changedTouches && e.changedTouches[0]) {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }
     }, false);
 
     document.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
+        if (e.changedTouches && e.changedTouches[0]) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }
     }, false);
 
     function handleSwipe() {
         const diff = touchEndX - touchStartX;
-        if (diff < -60) {
+        const windowWidth = window.innerWidth;
+        if ((touchStartX > windowWidth - 40 || touchStartX <= 20) && diff < -30) {
+            openDrawer();
+        } else if (diff < -60) {
             openDrawer();
         } else if (diff > 60) {
             closeDrawer();
@@ -688,11 +758,16 @@
             div.innerText = data.text;
         } else {
             div.className = 'message';
+            
+            let replyHtml = '';
+            if (data.replyTo) {
+                replyHtml = '<div class="msg-reply-quote"><strong>' + escapeHtml(data.replyTo.user) + '</strong>: ' + escapeHtml(data.replyTo.text) + '</div>';
+            }
+
             const userTag = '<strong>' + escapeHtml(data.user) + ':</strong> ';
             const msgText = formatMessageText(data.text);
             const timeHtml = '<span class="msg-time">' + escapeHtml(data.time || '') + '</span>';
 
-            // Mesaj Sağ Üst Menü Butonu (3 Çizgi)
             const menuBtn = document.createElement('button');
             menuBtn.className = 'msg-options-btn';
             menuBtn.innerText = '≡';
@@ -725,9 +800,8 @@
                 replyItem.innerText = 'REPLY';
                 replyItem.onclick = () => {
                     playClickSound();
-                    msgInput.value = '@' + data.user + ' ' + msgInput.value;
+                    setReply(data.user, data.text);
                     closeActiveMenu();
-                    msgInput.focus();
                 };
 
                 menu.appendChild(copyItem);
@@ -736,7 +810,7 @@
                 activeMenu = menu;
             };
 
-            div.innerHTML = userTag + msgText + timeHtml;
+            div.innerHTML = replyHtml + userTag + msgText + timeHtml;
             div.appendChild(menuBtn);
         }
         messagesDiv.appendChild(div);
@@ -756,15 +830,29 @@
         triggerVibration();
         lastSendTime = now;
 
-        renderMessage({
+        const msgData = {
             type: 'user',
             user: myUsername,
             text: trimmedMsg,
             time: getClientTimestamp()
+        };
+
+        if (currentReplyData) {
+            msgData.replyTo = {
+                user: currentReplyData.user,
+                text: currentReplyData.text
+            };
+        }
+
+        renderMessage(msgData);
+
+        socket.emit('chat message', {
+            text: trimmedMsg,
+            replyTo: currentReplyData
         });
 
-        socket.emit('chat message', { text: trimmedMsg });
         msgInput.value = '';
+        clearReply();
     }
 
     sendBtn.onclick = sendMessage;
