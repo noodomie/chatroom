@@ -8,7 +8,6 @@ const io = new Server(server);
 
 app.use(express.static('public'));
 
-// socket.id -> { name: string, device: string }
 const users = {};
 const lastMessageTime = {};
 
