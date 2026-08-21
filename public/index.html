@@ -149,7 +149,7 @@
             gap: 10px;
         }
         .message {
-            padding: 10px 10px 22px 10px;
+            padding: 10px 32px 22px 10px;
             border: 1px solid #333;
             word-break: break-word;
             text-align: left;
@@ -158,18 +158,50 @@
             line-height: 1.4;
             position: relative;
         }
-        .device-badge {
-            font-size: 10px;
+        .msg-options-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 14px;
             font-weight: bold;
-            margin-right: 6px;
-            padding: 2px 5px;
-            border: 1px solid #444;
-            border-radius: 2px;
-            color: #aaa;
-            background: #111;
-            display: inline-block;
-            vertical-align: middle;
+            cursor: pointer;
+            padding: 2px 6px;
+            line-height: 1;
+        }
+        .msg-options-btn:hover, .msg-options-btn:active {
+            color: #fff;
+        }
+        .msg-menu {
+            position: absolute;
+            top: 28px;
+            right: 6px;
+            background: #000;
+            border: 1px solid #fff;
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+        }
+        .msg-menu-item {
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            cursor: pointer;
+            border-bottom: 1px solid #222;
+            text-transform: uppercase;
             letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .msg-menu-item:last-child {
+            border-bottom: none;
+        }
+        .msg-menu-item:hover, .msg-menu-item:active {
+            background: #fff;
+            color: #000;
         }
         .message a {
             color: #3b82f6;
@@ -364,28 +396,14 @@
 <script>
     const socket = io();
     let myUsername = '';
-    let myDeviceType = '';
     let lastSendTime = 0;
     let touchStartX = 0;
     let touchEndX = 0;
+    let activeMenu = null;
 
-    function detectDeviceType() {
-        const ua = navigator.userAgent;
-        if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
-            return 'tablet';
-        }
-        if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua)) {
-            return 'mobile';
-        }
-        return 'desktop';
-    }
-
-    function getDeviceSymbol(device) {
-        if (device === 'mobile') return '[PHN]';
-        if (device === 'tablet') return '[TAB]';
-        return '[PC]';
-    }
-
+    // ==========================================
+    // SES MOTORU (Web Audio API)
+    // ==========================================
     let audioCtx = null;
 
     function initAudio() {
@@ -397,6 +415,51 @@
         }
     }
 
+    // 1. Buton Tıklama Sesi
+    function playClickSound() {
+        try {
+            initAudio();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(120, now + 0.03);
+
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.03);
+        } catch (e) {}
+    }
+
+    // 2. Mesaj Gönderme Sesi
+    function playSendSound() {
+        try {
+            initAudio();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(800, now + 0.06);
+
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.06);
+        } catch (e) {}
+    }
+
+    // 3. Mesaj Gelme Sesi
     function playMessageSound() {
         try {
             initAudio();
@@ -426,24 +489,47 @@
         } catch (e) {}
     }
 
-    function playClickSound() {
+    // 4. Birinin Katılması Sesi
+    function playJoinSound() {
         try {
             initAudio();
             const now = audioCtx.currentTime;
-
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(600, now);
-            osc.frequency.exponentialRampToValueAtTime(120, now + 0.03);
 
-            gain.gain.setValueAtTime(0.12, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.exponentialRampToValueAtTime(600, now + 0.12);
+
+            gain.gain.setValueAtTime(0.09, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
 
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start(now);
-            osc.stop(now + 0.03);
+            osc.stop(now + 0.12);
+        } catch (e) {}
+    }
+
+    // 5. Birinin Ayrılması Sesi
+    function playLeaveSound() {
+        try {
+            initAudio();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(500, now);
+            osc.frequency.exponentialRampToValueAtTime(250, now + 0.15);
+
+            gain.gain.setValueAtTime(0.09, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.15);
         } catch (e) {}
     }
 
@@ -474,6 +560,13 @@
         return hrs + ':' + mins;
     }
 
+    function closeActiveMenu() {
+        if (activeMenu) {
+            activeMenu.remove();
+            activeMenu = null;
+        }
+    }
+
     const loginScreen = document.getElementById('login-screen');
     const chatScreen = document.getElementById('chat-screen');
     const usernameInput = document.getElementById('username');
@@ -491,6 +584,7 @@
     const edgeHandle = document.getElementById('edge-handle');
 
     function openDrawer() {
+        closeActiveMenu();
         drawer.classList.remove('peek');
         drawer.classList.add('open');
         drawerBackdrop.classList.remove('hidden');
@@ -516,6 +610,23 @@
     drawerBackdrop.onclick = () => {
         closeDrawer();
     };
+
+    // Tüm Dokunma ve Tıklamalarda Açık Menüleri Kapatma
+    document.addEventListener('click', (e) => {
+        if (activeMenu && !activeMenu.contains(e.target) && !e.target.classList.contains('msg-options-btn')) {
+            closeActiveMenu();
+        }
+    });
+
+    // ==========================================
+    // KLAVYELER İÇİN KISAYOLLAR
+    // ==========================================
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeActiveMenu();
+            closeDrawer();
+        }
+    });
 
     document.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
@@ -546,9 +657,7 @@
             return;
         }
 
-        myDeviceType = detectDeviceType();
-
-        socket.emit('join', { name: name, device: myDeviceType }, (res) => {
+        socket.emit('join', { name: name }, (res) => {
             if (res.success) {
                 myUsername = name;
                 loginScreen.classList.add('hidden');
@@ -579,12 +688,56 @@
             div.innerText = data.text;
         } else {
             div.className = 'message';
-            const devSym = getDeviceSymbol(data.device || 'desktop');
-            const iconHtml = '<span class="device-badge">' + devSym + '</span>';
-            const userTag = iconHtml + '<strong>' + escapeHtml(data.user) + ':</strong> ';
+            const userTag = '<strong>' + escapeHtml(data.user) + ':</strong> ';
             const msgText = formatMessageText(data.text);
             const timeHtml = '<span class="msg-time">' + escapeHtml(data.time || '') + '</span>';
+
+            // Mesaj Sağ Üst Menü Butonu (3 Çizgi)
+            const menuBtn = document.createElement('button');
+            menuBtn.className = 'msg-options-btn';
+            menuBtn.innerText = '≡';
+
+            menuBtn.onclick = (e) => {
+                e.stopPropagation();
+                playClickSound();
+                triggerVibration();
+
+                if (activeMenu) {
+                    const isSame = activeMenu.parentNode === div;
+                    closeActiveMenu();
+                    if (isSame) return;
+                }
+
+                const menu = document.createElement('div');
+                menu.className = 'msg-menu';
+
+                const copyItem = document.createElement('div');
+                copyItem.className = 'msg-menu-item';
+                copyItem.innerText = 'COPY';
+                copyItem.onclick = () => {
+                    playClickSound();
+                    navigator.clipboard.writeText(data.text);
+                    closeActiveMenu();
+                };
+
+                const replyItem = document.createElement('div');
+                replyItem.className = 'msg-menu-item';
+                replyItem.innerText = 'REPLY';
+                replyItem.onclick = () => {
+                    playClickSound();
+                    msgInput.value = '@' + data.user + ' ' + msgInput.value;
+                    closeActiveMenu();
+                    msgInput.focus();
+                };
+
+                menu.appendChild(copyItem);
+                menu.appendChild(replyItem);
+                div.appendChild(menu);
+                activeMenu = menu;
+            };
+
             div.innerHTML = userTag + msgText + timeHtml;
+            div.appendChild(menuBtn);
         }
         messagesDiv.appendChild(div);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -599,14 +752,13 @@
         const now = Date.now();
         if (now - lastSendTime < 1000) return;
 
-        playClickSound();
+        playSendSound();
         triggerVibration();
         lastSendTime = now;
 
         renderMessage({
             type: 'user',
             user: myUsername,
-            device: myDeviceType,
             text: trimmedMsg,
             time: getClientTimestamp()
         });
@@ -624,7 +776,13 @@
 
     socket.on('chat message', (data) => {
         renderMessage(data);
-        playMessageSound();
+
+        if (data.type === 'system') {
+            if (data.event === 'join') playJoinSound();
+            if (data.event === 'leave') playLeaveSound();
+        } else if (data.type === 'user') {
+            playMessageSound();
+        }
     });
 
     socket.on('user list update', (list) => {
@@ -638,14 +796,9 @@
             const infoBox = document.createElement('div');
             infoBox.className = 'user-info-box';
 
-            const badgeSpan = document.createElement('span');
-            badgeSpan.className = 'device-badge';
-            badgeSpan.innerText = getDeviceSymbol(u.device);
-
             const nameSpan = document.createElement('span');
             nameSpan.innerText = u.name;
 
-            infoBox.appendChild(badgeSpan);
             infoBox.appendChild(nameSpan);
             item.appendChild(infoBox);
 
