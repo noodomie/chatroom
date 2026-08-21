@@ -29,8 +29,6 @@ function broadcastUserList() {
 }
 
 io.on('connection', (socket) => {
-    console.log('[CONNECT] Socket ID:', socket.id);
-
     socket.on('join', (username, callback) => {
         if (!isValidUsername(username)) {
             callback({ success: false, error: 'Invalid Name' });
@@ -48,7 +46,6 @@ io.on('connection', (socket) => {
 
         users[socket.id] = username;
         lastMessageTime[socket.id] = 0;
-        console.log('[JOIN]', username);
         callback({ success: true });
 
         broadcastUserList();
@@ -78,7 +75,6 @@ io.on('connection', (socket) => {
         }
 
         if (text.trim() !== '') {
-            console.log('[MESSAGE]', username + ':', text);
             socket.broadcast.emit('chat message', {
                 type: 'user',
                 user: username,
@@ -88,10 +84,13 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('ping test', (callback) => {
+        if (typeof callback === 'function') callback();
+    });
+
     socket.on('disconnect', () => {
         const username = users[socket.id];
         if (username) {
-            console.log('[LEAVE]', username);
             delete users[socket.id];
             delete lastMessageTime[socket.id];
             broadcastUserList();
