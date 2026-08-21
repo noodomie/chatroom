@@ -9,6 +9,7 @@ const io = new Server(server);
 app.use(express.static('public'));
 
 const users = {};
+const lastMessageTime = {};
 
 function isValidUsername(name) {
     const regex = /^[a-zA-Z]{3,16}$/;
@@ -26,14 +27,6 @@ function broadcastUserList() {
     const list = Object.values(users);
     io.emit('user list update', list);
 }
-
-setInterval(() => {
-    io.emit('room reset', {
-        type: 'system',
-        event: 'info',
-        text: '[SYSTEM] 30 minutes elapsed. Room messages cleared.'
-    });
-}, 30 * 60 * 1000);
 
 io.on('connection', (socket) => {
     console.log('[CONNECT] Socket ID:', socket.id);
@@ -54,6 +47,7 @@ io.on('connection', (socket) => {
         }
 
         users[socket.id] = username;
+        lastMessageTime[socket.id] = 0;
         console.log('[JOIN]', username);
         callback({ success: true });
 
@@ -70,6 +64,12 @@ io.on('connection', (socket) => {
         const username = users[socket.id];
         if (!username) return;
 
+        const now = Date.now();
+        if (lastMessageTime[socket.id] && now - lastMessageTime[socket.id] < 1000) {
+            return;
+        }
+        lastMessageTime[socket.id] = now;
+
         let text = '';
         if (typeof data === 'object' && data !== null) {
             text = (data.text || '').substring(0, 500);
@@ -79,7 +79,7 @@ io.on('connection', (socket) => {
 
         if (text.trim() !== '') {
             console.log('[MESSAGE]', username + ':', text);
-            io.emit('chat message', {
+            socket.broadcast.emit('chat message', {
                 type: 'user',
                 user: username,
                 text: text,
@@ -93,6 +93,7 @@ io.on('connection', (socket) => {
         if (username) {
             console.log('[LEAVE]', username);
             delete users[socket.id];
+            delete lastMessageTime[socket.id];
             broadcastUserList();
             io.emit('chat message', {
                 type: 'system',
