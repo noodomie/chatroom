@@ -31,11 +31,9 @@ function broadcastUserList() {
 io.on('connection', (socket) => {
     socket.on('join', (data, callback) => {
         let username = '';
-        let device = 'desktop';
 
         if (typeof data === 'object' && data !== null) {
             username = data.name || '';
-            device = data.device || 'desktop';
         } else {
             username = data;
         }
@@ -54,7 +52,7 @@ io.on('connection', (socket) => {
             return;
         }
 
-        users[socket.id] = { name: username, device: device };
+        users[socket.id] = { name: username };
         lastMessageTime[socket.id] = 0;
         callback({ success: true });
 
@@ -88,7 +86,6 @@ io.on('connection', (socket) => {
             socket.broadcast.emit('chat message', {
                 type: 'user',
                 user: userObj.name,
-                device: userObj.device,
                 text: text,
                 time: getTimestamp()
             });
