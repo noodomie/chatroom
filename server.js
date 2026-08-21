@@ -76,9 +76,14 @@ io.on('connection', (socket) => {
         lastMessageTime[socket.id] = now;
 
         let text = '';
+        let image = null;
         let replyTo = null;
+
         if (typeof data === 'object' && data !== null) {
             text = (data.text || '').substring(0, 500);
+            if (typeof data.image === 'string' && data.image.startsWith('data:image/')) {
+                image = data.image;
+            }
             if (data.replyTo && typeof data.replyTo === 'object') {
                 replyTo = {
                     user: String(data.replyTo.user || '').substring(0, 50),
@@ -89,11 +94,12 @@ io.on('connection', (socket) => {
             text = data.substring(0, 500);
         }
 
-        if (text.trim() !== '') {
+        if (text.trim() !== '' || image) {
             const messageData = {
                 type: 'user',
                 user: userObj.name,
                 text: text,
+                image: image,
                 time: getTimestamp()
             };
             if (replyTo) {
