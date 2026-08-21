@@ -16,7 +16,7 @@
             direction: ltr;
         }
         body {
-            background-color: #000;
+            background-color: #050505;
             color: #fff;
             width: 100vw;
             height: 100dvh;
@@ -25,49 +25,9 @@
             justify-content: center;
             align-items: center;
         }
-        #desktop-warning {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #000;
-            color: #fff;
-            z-index: 9999;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 24px;
-        }
-        .desktop-box {
-            border: 1px solid #fff;
-            padding: 24px;
-            max-width: 400px;
-        }
-        .desktop-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            letter-spacing: 1px;
-        }
-        .desktop-desc {
-            font-size: 13px;
-            color: #aaa;
-            line-height: 1.5;
-        }
-        @media (min-width: 1025px) {
-            #desktop-warning {
-                display: flex;
-            }
-            .container {
-                display: none !important;
-            }
-        }
         .container {
             width: 100%;
-            max-width: 768px;
+            max-width: 900px;
             height: 100dvh;
             display: flex;
             flex-direction: column;
@@ -75,6 +35,17 @@
             border-left: 1px solid #222;
             border-right: 1px solid #222;
             position: relative;
+            background: #000;
+        }
+        /* Masaüstü ve Tablet Görünüm Optimizasyonu */
+        @media (min-width: 769px) {
+            .container {
+                height: 92dvh;
+                max-height: 800px;
+                border: 1px solid #333;
+                border-radius: 8px;
+                box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+            }
         }
         .screen {
             flex: 1;
@@ -92,6 +63,9 @@
             justify-content: center;
             align-items: center;
             gap: 16px;
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
         }
         .title {
             font-size: 36px;
@@ -184,6 +158,12 @@
             font-size: 15px;
             line-height: 1.4;
             position: relative;
+        }
+        .device-icon {
+            font-size: 13px;
+            margin-right: 4px;
+            display: inline-block;
+            vertical-align: middle;
         }
         .message a {
             color: #3b82f6;
@@ -315,6 +295,11 @@
         .user-item:active {
             border-color: #fff;
         }
+        .user-info-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
         .user-tag {
             font-size: 10px;
             color: #666;
@@ -332,13 +317,6 @@
     </style>
 </head>
 <body>
-
-<div id="desktop-warning">
-    <div class="desktop-box">
-        <div class="desktop-title">[ ACCESS RESTRICTED ]</div>
-        <div class="desktop-desc">THIS APPLICATION IS DESIGNED FOR MOBILE AND TABLET DEVICES ONLY. PLEASE OPEN FROM A MOBILE DEVICE.</div>
-    </div>
-</div>
 
 <div class="container">
     <div id="login-screen" class="screen">
@@ -379,9 +357,28 @@
 <script>
     const socket = io();
     let myUsername = '';
+    let myDeviceType = '';
     let lastSendTime = 0;
     let touchStartX = 0;
     let touchEndX = 0;
+
+    // Cihaz Türü Tespiti (Telefon, Tablet, Bilgisayar)
+    function detectDeviceType() {
+        const ua = navigator.userAgent;
+        if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+            return 'tablet';
+        }
+        if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua)) {
+            return 'mobile';
+        }
+        return 'desktop';
+    }
+
+    function getDeviceIcon(device) {
+        if (device === 'mobile') return '📱';
+        if (device === 'tablet') return '📟';
+        return '💻';
+    }
 
     // ==========================================
     // SES MOTORU (Web Audio API)
@@ -397,7 +394,6 @@
         }
     }
 
-    // 1. Gelen Mesaj Sesi (8-Bit Çift Ton Bip)
     function playMessageSound() {
         try {
             initAudio();
@@ -427,7 +423,6 @@
         } catch (e) {}
     }
 
-    // 2. Buton Tıklama Sesi (Kısa Retro Tık)
     function playClickSound() {
         try {
             initAudio();
@@ -548,7 +543,9 @@
             return;
         }
 
-        socket.emit('join', name, (res) => {
+        myDeviceType = detectDeviceType();
+
+        socket.emit('join', { name: name, device: myDeviceType }, (res) => {
             if (res.success) {
                 myUsername = name;
                 loginScreen.classList.add('hidden');
@@ -579,7 +576,9 @@
             div.innerText = data.text;
         } else {
             div.className = 'message';
-            const userTag = '<strong>' + escapeHtml(data.user) + ':</strong> ';
+            const devIcon = getDeviceIcon(data.device || 'desktop');
+            const iconHtml = '<span class="device-icon">' + devIcon + '</span>';
+            const userTag = iconHtml + '<strong>' + escapeHtml(data.user) + ':</strong> ';
             const msgText = formatMessageText(data.text);
             const timeHtml = '<span class="msg-time">' + escapeHtml(data.time || '') + '</span>';
             div.innerHTML = userTag + msgText + timeHtml;
@@ -604,6 +603,7 @@
         renderMessage({
             type: 'user',
             user: myUsername,
+            device: myDeviceType,
             text: trimmedMsg,
             time: getClientTimestamp()
         });
@@ -632,12 +632,20 @@
             const item = document.createElement('div');
             item.className = 'user-item';
 
+            const infoBox = document.createElement('div');
+            infoBox.className = 'user-info-box';
+
+            const iconSpan = document.createElement('span');
+            iconSpan.innerText = getDeviceIcon(u.device);
+
             const nameSpan = document.createElement('span');
-            nameSpan.innerText = u;
+            nameSpan.innerText = u.name;
 
-            item.appendChild(nameSpan);
+            infoBox.appendChild(iconSpan);
+            infoBox.appendChild(nameSpan);
+            item.appendChild(infoBox);
 
-            if (u === myUsername) {
+            if (u.name === myUsername) {
                 const tag = document.createElement('span');
                 tag.className = 'user-tag';
                 tag.innerText = 'YOU';
@@ -646,8 +654,8 @@
 
             item.onclick = () => {
                 playClickSound();
-                if (u !== myUsername) {
-                    msgInput.value = '@' + u + ' ' + msgInput.value;
+                if (u.name !== myUsername) {
+                    msgInput.value = '@' + u.name + ' ' + msgInput.value;
                     closeDrawer();
                     msgInput.focus();
                 }
