@@ -15,7 +15,6 @@
             -webkit-tap-highlight-color: transparent;
             direction: ltr;
         }
-
         body {
             background-color: #000;
             color: #fff;
@@ -26,7 +25,6 @@
             justify-content: center;
             align-items: center;
         }
-
         .container {
             width: 100%;
             max-width: 480px;
@@ -37,7 +35,6 @@
             border-left: 1px solid #222;
             border-right: 1px solid #222;
         }
-
         .screen {
             flex: 1;
             display: flex;
@@ -47,24 +44,20 @@
             height: 100%;
             position: relative;
         }
-
         .hidden {
             display: none !important;
         }
-
         #login-screen {
             justify-content: center;
             align-items: center;
             gap: 16px;
         }
-
         .title {
             font-size: 36px;
             font-weight: bold;
             letter-spacing: 2px;
             margin-bottom: 10px;
         }
-
         input[type="text"] {
             width: 100%;
             padding: 14px;
@@ -78,7 +71,6 @@
             user-select: text;
             -webkit-user-select: text;
         }
-
         .btn {
             width: 100%;
             padding: 14px;
@@ -91,18 +83,15 @@
             text-transform: uppercase;
             flex-shrink: 0;
         }
-
         .btn:active {
             background: #aaa;
         }
-
         .error {
             color: #ff3333;
             font-size: 14px;
             min-height: 18px;
             text-align: center;
         }
-
         .chat-header {
             padding: 14px;
             border-bottom: 1px solid #fff;
@@ -111,7 +100,6 @@
             flex-shrink: 0;
             letter-spacing: 1px;
         }
-
         #messages {
             flex: 1;
             overflow-y: auto;
@@ -120,7 +108,6 @@
             flex-direction: column;
             gap: 10px;
         }
-
         .message {
             padding: 10px 10px 22px 10px;
             border: 1px solid #333;
@@ -131,7 +118,11 @@
             line-height: 1.4;
             position: relative;
         }
-
+        .message a {
+            color: #3b82f6;
+            text-decoration: underline;
+            word-break: break-all;
+        }
         .msg-time {
             position: absolute;
             bottom: 4px;
@@ -139,7 +130,6 @@
             font-size: 10px;
             color: #666;
         }
-
         .system-msg {
             font-size: 12px;
             padding: 4px 0;
@@ -150,19 +140,15 @@
             letter-spacing: 0.5px;
             white-space: pre-line;
         }
-
         .system-msg.join {
             color: #22c55e;
         }
-
         .system-msg.leave {
             color: #ef4444;
         }
-
         .system-msg.info {
             color: #3b82f6;
         }
-
         .input-area-wrapper {
             display: flex;
             flex-direction: column;
@@ -171,18 +157,15 @@
             width: 100%;
             padding-top: 8px;
         }
-
         .input-area {
             display: flex;
             gap: 8px;
             width: 100%;
         }
-
         .input-area input {
             flex: 1;
             width: 0;
         }
-
         .input-area .send-btn {
             width: auto;
             padding: 14px 20px;
@@ -191,122 +174,146 @@
     </style>
 </head>
 <body>
+<div class="container">
+    <div id="login-screen" class="screen">
+        <div class="title">CHAT</div>
+        <input type="text" id="username" placeholder="Enter username..." maxlength="16" autocomplete="off" spellcheck="false">
+        <div id="error" class="error"></div>
+        <button class="btn" id="join-btn">JOIN</button>
+    </div>
 
-    <div class="container">
-        <div id="login-screen" class="screen">
-            <div class="title">CHAT</div>
-            <input type="text" id="username" placeholder="Enter username..." maxlength="16" autocomplete="off" spellcheck="false">
-            <div id="error" class="error"></div>
-            <button class="btn" id="join-btn">JOIN</button>
-        </div>
+    <div id="chat-screen" class="screen hidden">
+        <div class="chat-header">CHAT ROOM</div>
+        <div id="messages"></div>
 
-        <div id="chat-screen" class="screen hidden">
-            <div class="chat-header">CHAT ROOM</div>
-            <div id="messages"></div>
-
-            <div class="input-area-wrapper">
-                <div class="input-area">
-                    <input type="text" id="msg-input" placeholder="Type a message..." maxlength="500" autocomplete="off" spellcheck="false">
-                    <button class="btn send-btn" id="send-btn">SEND</button>
-                </div>
+        <div class="input-area-wrapper">
+            <div class="input-area">
+                <input type="text" id="msg-input" placeholder="Type a message..." maxlength="500" autocomplete="off" spellcheck="false">
+                <button class="btn send-btn" id="send-btn">SEND</button>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    let myUsername = '';
+    let lastSendTime = 0;
 
-        function triggerVibration() {
-            if (navigator.vibrate) {
-                navigator.vibrate(25);
-            }
+    function triggerVibration() {
+        if (navigator.vibrate) {
+            navigator.vibrate(25);
         }
+    }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.innerText = text;
-            return div.innerHTML;
-        }
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.innerText = text;
+        return div.innerHTML;
+    }
 
-        const loginScreen = document.getElementById('login-screen');
-        const chatScreen = document.getElementById('chat-screen');
-        const usernameInput = document.getElementById('username');
-        const joinBtn = document.getElementById('join-btn');
-        const errorDiv = document.getElementById('error');
-        const messagesDiv = document.getElementById('messages');
-        const msgInput = document.getElementById('msg-input');
-        const sendBtn = document.getElementById('send-btn');
-
-        function joinChat() {
-            triggerVibration();
-            const name = usernameInput.value.trim();
-            const regex = /^[a-zA-Z]{3,16}$/;
-
-            if (!regex.test(name)) {
-                errorDiv.innerText = 'Invalid Name';
-                return;
-            }
-
-            socket.emit('join', name, (res) => {
-                if (res.success) {
-                    loginScreen.classList.add('hidden');
-                    chatScreen.classList.remove('hidden');
-                    msgInput.focus();
-                } else {
-                    errorDiv.innerText = res.error;
-                }
-            });
-        }
-
-        joinBtn.onclick = joinChat;
-        usernameInput.onkeydown = (e) => {
-            if (e.key === 'Enter') joinChat();
-        };
-
-        function sendMessage() {
-            triggerVibration();
-            const rawMsg = msgInput.value;
-            const trimmedMsg = rawMsg.trim();
-
-            if (trimmedMsg.length === 0) return;
-
-            socket.emit('chat message', { text: trimmedMsg });
-            msgInput.value = '';
-        }
-
-        sendBtn.onclick = sendMessage;
-        msgInput.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        };
-
-        socket.on('room reset', (data) => {
-            messagesDiv.innerHTML = '';
-            const div = document.createElement('div');
-            div.className = 'system-msg info';
-            div.innerText = data.text;
-            messagesDiv.appendChild(div);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    function formatMessageText(text) {
+        const escaped = escapeHtml(text);
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        return escaped.replace(urlRegex, function(url) {
+            return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + '</a>';
         });
+    }
 
-        socket.on('chat message', (data) => {
-            const div = document.createElement('div');
+    function getClientTimestamp() {
+        const d = new Date();
+        const hrs = String(d.getHours()).padStart(2, '0');
+        const mins = String(d.getMinutes()).padStart(2, '0');
+        return hrs + ':' + mins;
+    }
 
-            if (data.type === 'system') {
-                div.className = 'system-msg ' + data.event;
-                div.innerText = data.text;
+    const loginScreen = document.getElementById('login-screen');
+    const chatScreen = document.getElementById('chat-screen');
+    const usernameInput = document.getElementById('username');
+    const joinBtn = document.getElementById('join-btn');
+    const errorDiv = document.getElementById('error');
+    const messagesDiv = document.getElementById('messages');
+    const msgInput = document.getElementById('msg-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    function joinChat() {
+        triggerVibration();
+        const name = usernameInput.value.trim();
+        const regex = /^[a-zA-Z]{3,16}$/;
+
+        if (!regex.test(name)) {
+            errorDiv.innerText = 'Invalid Name';
+            return;
+        }
+
+        socket.emit('join', name, (res) => {
+            if (res.success) {
+                myUsername = name;
+                loginScreen.classList.add('hidden');
+                chatScreen.classList.remove('hidden');
+                msgInput.focus();
             } else {
-                div.className = 'message';
-                const userTag = '<strong>' + escapeHtml(data.user) + ':</strong> ';
-                const msgText = escapeHtml(data.text);
-                const timeHtml = '<span class="msg-time">' + escapeHtml(data.time || '') + '</span>';
-                div.innerHTML = userTag + msgText + timeHtml;
+                errorDiv.innerText = res.error;
             }
-            messagesDiv.appendChild(div);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
-    </script>
+    }
+
+    joinBtn.onclick = joinChat;
+    usernameInput.onkeydown = (e) => {
+        if (e.key === 'Enter') joinChat();
+    };
+
+    function renderMessage(data) {
+        const div = document.createElement('div');
+
+        if (data.type === 'system') {
+            div.className = 'system-msg ' + data.event;
+            div.innerText = data.text;
+        } else {
+            div.className = 'message';
+            const userTag = '<strong>' + escapeHtml(data.user) + ':</strong> ';
+            const msgText = formatMessageText(data.text);
+            const timeHtml = '<span class="msg-time">' + escapeHtml(data.time || '') + '</span>';
+            div.innerHTML = userTag + msgText + timeHtml;
+        }
+        messagesDiv.appendChild(div);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function sendMessage() {
+        const rawMsg = msgInput.value;
+        const trimmedMsg = rawMsg.trim();
+
+        if (trimmedMsg.length === 0) return;
+
+        const now = Date.now();
+        if (now - lastSendTime < 1000) return;
+
+        triggerVibration();
+        lastSendTime = now;
+
+        renderMessage({
+            type: 'user',
+            user: myUsername,
+            text: trimmedMsg,
+            time: getClientTimestamp()
+        });
+
+        socket.emit('chat message', { text: trimmedMsg });
+        msgInput.value = '';
+    }
+
+    sendBtn.onclick = sendMessage;
+    msgInput.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    };
+
+    socket.on('chat message', (data) => {
+        renderMessage(data);
+    });
+</script>
 </body>
 </html>
