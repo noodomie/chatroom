@@ -212,6 +212,16 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        .msg-img {
+            max-width: 100%;
+            max-height: 260px;
+            border: 1px solid #333;
+            margin-top: 6px;
+            display: block;
+            cursor: pointer;
+            object-fit: contain;
+            background: #050505;
+        }
         .msg-options-btn {
             position: absolute;
             top: 6px;
@@ -336,6 +346,22 @@
         .input-area input {
             flex: 1;
             width: 0;
+        }
+        .photo-btn {
+            width: auto;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .photo-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: #000;
+            fill: none;
+        }
+        .photo-btn:active svg {
+            stroke: #000;
         }
         .input-area .send-btn {
             width: auto;
@@ -466,6 +492,13 @@
                 <button class="reply-preview-close" id="reply-preview-close-btn">&times;</button>
             </div>
             <div class="input-area">
+                <input type="file" id="image-input" accept="image/png, image/jpeg, image/webp, image/gif" class="hidden">
+                <button class="btn photo-btn" id="photo-btn" type="button">
+                    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                </button>
                 <input type="text" id="msg-input" placeholder="Type a message..." maxlength="500" autocomplete="off" spellcheck="false">
                 <button class="btn send-btn" id="send-btn">SEND</button>
             </div>
@@ -660,6 +693,8 @@
     const messagesDiv = document.getElementById('messages');
     const msgInput = document.getElementById('msg-input');
     const sendBtn = document.getElementById('send-btn');
+    const photoBtn = document.getElementById('photo-btn');
+    const imageInput = document.getElementById('image-input');
     const drawer = document.getElementById('drawer');
     const drawerBackdrop = document.getElementById('drawer-backdrop');
     const onlineCount = document.getElementById('online-count');
@@ -670,6 +705,88 @@
     const replyPreview = document.getElementById('reply-preview');
     const replyPreviewText = document.getElementById('reply-preview-text');
     const replyPreviewCloseBtn = document.getElementById('reply-preview-close-btn');
+
+    photoBtn.onclick = () => {
+        playClickSound();
+        triggerVibration();
+        imageInput.click();
+    };
+
+    imageInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            imageInput.value = '';
+            return;
+        }
+
+        compressAndSendImage(file);
+        imageInput.value = '';
+    };
+
+    function compressAndSendImage(file) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const maxWidth = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                sendImageMessage(compressedBase64);
+            };
+        };
+    }
+
+    function sendImageMessage(base64Data) {
+        const now = Date.now();
+        if (now - lastSendTime < 1000) return;
+
+        playSendSound();
+        triggerVibration();
+        lastSendTime = now;
+
+        const msgData = {
+            type: 'user',
+            user: myUsername,
+            image: base64Data,
+            time: getClientTimestamp()
+        };
+
+        if (currentReplyData) {
+            msgData.replyTo = {
+                user: currentReplyData.user,
+                text: currentReplyData.text
+            };
+        }
+
+        renderMessage(msgData);
+
+        socket.emit('chat message', {
+            image: base64Data,
+            replyTo: currentReplyData
+        });
+
+        clearReply();
+    }
 
     function setReply(user, text) {
         currentReplyData = { user: user, text: text };
@@ -806,7 +923,14 @@
             }
 
             const userTag = '<strong>' + escapeHtml(data.user) + ':</strong> ';
-            const msgText = formatMessageText(data.text);
+            let bodyContent = '';
+
+            if (data.image) {
+                bodyContent = '<br><img class="msg-img" src="' + data.image + '" onclick="window.open(this.src)" />';
+            } else {
+                bodyContent = formatMessageText(data.text || '');
+            }
+
             const timeHtml = '<span class="msg-time">' + escapeHtml(data.time || '') + '</span>';
 
             const menuBtn = document.createElement('button');
@@ -827,31 +951,34 @@
                 const menu = document.createElement('div');
                 menu.className = 'msg-menu';
 
-                const copyItem = document.createElement('div');
-                copyItem.className = 'msg-menu-item';
-                copyItem.innerText = 'COPY';
-                copyItem.onclick = () => {
-                    playClickSound();
-                    navigator.clipboard.writeText(data.text);
-                    closeActiveMenu();
-                };
+                if (!data.image) {
+                    const copyItem = document.createElement('div');
+                    copyItem.className = 'msg-menu-item';
+                    copyItem.innerText = 'COPY';
+                    copyItem.onclick = () => {
+                        playClickSound();
+                        navigator.clipboard.writeText(data.text || '');
+                        closeActiveMenu();
+                    };
+                    menu.appendChild(copyItem);
+                }
 
                 const replyItem = document.createElement('div');
                 replyItem.className = 'msg-menu-item';
                 replyItem.innerText = 'REPLY';
                 replyItem.onclick = () => {
                     playClickSound();
-                    setReply(data.user, data.text);
+                    const replySummary = data.image ? '[IMAGE]' : (data.text || '');
+                    setReply(data.user, replySummary);
                     closeActiveMenu();
                 };
-
-                menu.appendChild(copyItem);
                 menu.appendChild(replyItem);
+
                 div.appendChild(menu);
                 activeMenu = menu;
             };
 
-            div.innerHTML = replyHtml + userTag + msgText + timeHtml;
+            div.innerHTML = replyHtml + userTag + bodyContent + timeHtml;
             div.appendChild(menuBtn);
         }
         messagesDiv.appendChild(div);
