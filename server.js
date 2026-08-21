@@ -76,19 +76,30 @@ io.on('connection', (socket) => {
         lastMessageTime[socket.id] = now;
 
         let text = '';
+        let replyTo = null;
         if (typeof data === 'object' && data !== null) {
             text = (data.text || '').substring(0, 500);
+            if (data.replyTo && typeof data.replyTo === 'object') {
+                replyTo = {
+                    user: String(data.replyTo.user || '').substring(0, 50),
+                    text: String(data.replyTo.text || '').substring(0, 200)
+                };
+            }
         } else if (typeof data === 'string') {
             text = data.substring(0, 500);
         }
 
         if (text.trim() !== '') {
-            socket.broadcast.emit('chat message', {
+            const messageData = {
                 type: 'user',
                 user: userObj.name,
                 text: text,
                 time: getTimestamp()
-            });
+            };
+            if (replyTo) {
+                messageData.replyTo = replyTo;
+            }
+            socket.broadcast.emit('chat message', messageData);
         }
     });
 
