@@ -500,26 +500,13 @@
 
     let audioCtx = null;
     let masterGain = null;
-    let compressor = null;
 
     function initAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Master Gain: Yüksek genel ses seviyesi
             masterGain = audioCtx.createGain();
-            masterGain.gain.setValueAtTime(2.0, audioCtx.currentTime);
-
-            // Dynamic Compressor: Düşük ses seviyesinde sinyali sıkıştırıp algılanabilirliği artırır, bozunmayı engeller
-            compressor = audioCtx.createDynamicsCompressor();
-            compressor.threshold.setValueAtTime(-20, audioCtx.currentTime);
-            compressor.knee.setValueAtTime(10, audioCtx.currentTime);
-            compressor.ratio.setValueAtTime(12, audioCtx.currentTime);
-            compressor.attack.setValueAtTime(0.002, audioCtx.currentTime);
-            compressor.release.setValueAtTime(0.1, audioCtx.currentTime);
-
-            masterGain.connect(compressor);
-            compressor.connect(audioCtx.destination);
+            masterGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            masterGain.connect(audioCtx.destination);
         }
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
@@ -533,17 +520,17 @@
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
 
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(1400, now);
-            osc.frequency.exponentialRampToValueAtTime(400, now + 0.04);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(400, now + 0.02);
 
-            gain.gain.setValueAtTime(0.9, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
 
             osc.connect(gain);
             gain.connect(masterGain);
             osc.start(now);
-            osc.stop(now + 0.04);
+            osc.stop(now + 0.02);
         } catch (e) {}
     }
 
@@ -554,17 +541,17 @@
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
 
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(800, now);
-            osc.frequency.exponentialRampToValueAtTime(1800, now + 0.08);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(320, now);
+            osc.frequency.exponentialRampToValueAtTime(680, now + 0.07);
 
-            gain.gain.setValueAtTime(0.85, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
 
             osc.connect(gain);
             gain.connect(masterGain);
             osc.start(now);
-            osc.stop(now + 0.08);
+            osc.stop(now + 0.07);
         } catch (e) {}
     }
 
@@ -573,27 +560,26 @@
             initAudio();
             const now = audioCtx.currentTime;
 
-            // İnsan kulağının en hassas olduğu 1kHz - 1.5kHz aralığında 2 tonlu kare dalga
             const osc1 = audioCtx.createOscillator();
             const gain1 = audioCtx.createGain();
-            osc1.type = 'square';
+            osc1.type = 'sine';
             osc1.frequency.setValueAtTime(1046.50, now);
-            gain1.gain.setValueAtTime(0.8, now);
-            gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+            gain1.gain.setValueAtTime(0.25, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
             osc1.connect(gain1);
             gain1.connect(masterGain);
             osc1.start(now);
-            osc1.stop(now + 0.08);
+            osc1.stop(now + 0.1);
 
             const osc2 = audioCtx.createOscillator();
             const gain2 = audioCtx.createGain();
-            osc2.type = 'square';
-            osc2.frequency.setValueAtTime(1567.98, now + 0.07);
-            gain2.gain.setValueAtTime(0.8, now + 0.07);
-            gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1318.51, now + 0.06);
+            gain2.gain.setValueAtTime(0.25, now + 0.06);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
             osc2.connect(gain2);
             gain2.connect(masterGain);
-            osc2.start(now + 0.07);
+            osc2.start(now + 0.06);
             osc2.stop(now + 0.18);
         } catch (e) {}
     }
@@ -602,20 +588,28 @@
         try {
             initAudio();
             const now = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
 
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(600, now);
-            osc.frequency.exponentialRampToValueAtTime(1400, now + 0.12);
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(783.99, now);
+            gain1.gain.setValueAtTime(0.2, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+            osc1.connect(gain1);
+            gain1.connect(masterGain);
+            osc1.start(now);
+            osc1.stop(now + 0.09);
 
-            gain.gain.setValueAtTime(0.9, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(now);
-            osc.stop(now + 0.12);
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1046.50, now + 0.07);
+            gain2.gain.setValueAtTime(0.2, now + 0.07);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc2.connect(gain2);
+            gain2.connect(masterGain);
+            osc2.start(now + 0.07);
+            osc2.stop(now + 0.2);
         } catch (e) {}
     }
 
@@ -623,26 +617,34 @@
         try {
             initAudio();
             const now = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
 
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(1200, now);
-            osc.frequency.exponentialRampToValueAtTime(400, now + 0.14);
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(659.25, now);
+            gain1.gain.setValueAtTime(0.18, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+            osc1.connect(gain1);
+            gain1.connect(masterGain);
+            osc1.start(now);
+            osc1.stop(now + 0.09);
 
-            gain.gain.setValueAtTime(0.85, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.14);
-
-            osc.connect(gain);
-            gain.connect(masterGain);
-            osc.start(now);
-            osc.stop(now + 0.14);
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(523.25, now + 0.07);
+            gain2.gain.setValueAtTime(0.18, now + 0.07);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc2.connect(gain2);
+            gain2.connect(masterGain);
+            osc2.start(now + 0.07);
+            osc2.stop(now + 0.2);
         } catch (e) {}
     }
 
     function triggerVibration() {
         if (navigator.vibrate) {
-            navigator.vibrate(25);
+            navigator.vibrate(20);
         }
     }
 
@@ -932,7 +934,9 @@
             if (data.event === 'join') playJoinSound();
             if (data.event === 'leave') playLeaveSound();
         } else if (data.type === 'user') {
-            playMessageSound();
+            if (data.user !== myUsername) {
+                playMessageSound();
+            }
         }
     });
 
