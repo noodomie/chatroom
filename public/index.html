@@ -168,6 +168,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: background-color 0.2s ease;
         }
         .container {
             width: 100%;
@@ -195,36 +196,180 @@
             display: flex;
             flex-direction: column;
             padding: 16px;
-            overflow: hidden;
+            overflow-y: auto;
             height: 100%;
             position: relative;
         }
         .hidden {
             display: none !important;
         }
+
+        /* Login Screen Layout */
         #login-screen {
             justify-content: center;
             align-items: center;
-            gap: 16px;
-            max-width: 400px;
+            gap: 12px;
+            max-width: 420px;
             margin: 0 auto;
             width: 100%;
         }
         .title {
-            font-size: 36px;
+            font-size: 28px;
             font-weight: bold;
             letter-spacing: 2px;
-            margin-bottom: 10px;
             color: var(--text-color);
+            text-align: center;
         }
+
+        /* Theme Selector Card (Login Screen) */
+        .theme-card {
+            width: 100%;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-main);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+        .theme-card-header {
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        /* Mini Live App Preview */
+        .preview-box {
+            width: 100%;
+            background: var(--bg-box);
+            border: 1px solid var(--border-sub);
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-sub);
+            padding-bottom: 6px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .preview-online {
+            font-size: 9px;
+            color: var(--accent);
+        }
+        .preview-msg {
+            padding: 6px 8px;
+            border: 1px solid var(--border-sub);
+            font-size: 11px;
+            background: var(--bg-panel);
+            position: relative;
+            line-height: 1.2;
+        }
+        .preview-msg-reply {
+            background: var(--quote-bg);
+            border-left: 2px solid var(--border-main);
+            padding: 2px 4px;
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .preview-input-row {
+            display: flex;
+            gap: 4px;
+        }
+        .preview-input-mock {
+            flex: 1;
+            border: 1px solid var(--border-main);
+            background: var(--input-bg);
+            color: var(--text-muted);
+            font-size: 9px;
+            padding: 6px;
+        }
+        .preview-btn-mock {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            font-size: 9px;
+            font-weight: bold;
+            padding: 6px 10px;
+        }
+
+        /* Theme Label & Swatches */
+        .theme-label {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--text-color);
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        .swatch-row {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            width: 100%;
+            padding: 6px 2px;
+            justify-content: flex-start;
+            scrollbar-width: none;
+        }
+        .swatch-row::-webkit-scrollbar {
+            display: none;
+        }
+        .swatch-btn {
+            flex: 0 0 42px;
+            height: 42px;
+            border-radius: 8px;
+            border: 2px solid var(--border-sub);
+            cursor: pointer;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+        .swatch-btn:active {
+            transform: scale(0.92);
+        }
+        .swatch-btn.active {
+            border-color: var(--border-main);
+            box-shadow: 0 0 0 2px var(--bg-box), 0 0 0 4px var(--border-main);
+        }
+        .swatch-preview-split {
+            width: 100%;
+            height: 100%;
+            display: flex;
+        }
+        .swatch-bg {
+            flex: 1;
+            height: 100%;
+        }
+        .swatch-accent {
+            width: 40%;
+            height: 100%;
+        }
+        .theme-subtext {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        /* General Controls */
         input[type="text"] {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             background: var(--input-bg);
             color: var(--input-text);
             border: 1px solid var(--border-main);
             outline: none;
-            font-size: 16px;
+            font-size: 15px;
             text-align: left;
             direction: ltr;
             user-select: text;
@@ -232,11 +377,11 @@
         }
         .btn {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             background: var(--btn-bg);
             color: var(--btn-text);
             border: none;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
@@ -247,10 +392,12 @@
         }
         .error {
             color: #ff3333;
-            font-size: 14px;
-            min-height: 18px;
+            font-size: 13px;
+            min-height: 16px;
             text-align: center;
         }
+
+        /* Chat UI */
         .chat-header {
             padding: 14px;
             border-bottom: 1px solid var(--border-main);
@@ -299,12 +446,8 @@
             animation: fallStars 18s linear infinite;
         }
         @keyframes fallStars {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(300px);
-            }
+            0% { transform: translateY(0); }
+            100% { transform: translateY(300px); }
         }
         .edge-handle {
             position: absolute;
@@ -431,15 +574,10 @@
             position: relative;
             z-index: 1;
         }
-        .system-msg.join {
-            color: #22c55e;
-        }
-        .system-msg.leave {
-            color: #ef4444;
-        }
-        .system-msg.info {
-            color: var(--link-color);
-        }
+        .system-msg.join { color: #22c55e; }
+        .system-msg.leave { color: #ef4444; }
+        .system-msg.info { color: var(--link-color); }
+
         .input-area-wrapper {
             display: flex;
             flex-direction: column;
@@ -489,9 +627,11 @@
         }
         .input-area .send-btn {
             width: auto;
-            padding: 14px 20px;
+            padding: 12px 20px;
             white-space: nowrap;
         }
+
+        /* Drawer / User List */
         .drawer-backdrop {
             position: absolute;
             top: 0;
@@ -561,31 +701,6 @@
             border-bottom: 1px solid var(--border-sub);
             text-transform: uppercase;
         }
-        .theme-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border-sub);
-        }
-        .theme-btn {
-            padding: 8px 4px;
-            background: var(--bg-box);
-            color: var(--text-color);
-            border: 1px solid var(--border-sub);
-            font-size: 10px;
-            font-weight: bold;
-            font-family: monospace;
-            cursor: pointer;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .theme-btn:active, .theme-btn.active {
-            background: var(--btn-bg);
-            color: var(--btn-text);
-            border-color: var(--border-main);
-        }
         .user-list {
             flex: 1;
             overflow-y: auto;
@@ -633,6 +748,81 @@
 <div class="container">
     <div id="login-screen" class="screen">
         <div class="title">CHAT</div>
+
+        <div class="theme-card">
+            <div class="theme-card-header">APP THEME</div>
+            
+            <div class="preview-box">
+                <div class="preview-header">
+                    <span>Mesajlar</span>
+                    <span class="preview-online">• ONLINE</span>
+                </div>
+                <div class="preview-msg">
+                    <div class="preview-msg-reply">noodomie: Selam!</div>
+                    <strong>Alex:</strong> Tema önizlemesi harika görünüyor.
+                </div>
+                <div class="preview-input-row">
+                    <div class="preview-input-mock">Mesaj yaz...</div>
+                    <div class="preview-btn-mock">GONDER</div>
+                </div>
+            </div>
+
+            <div class="theme-label" id="current-theme-title">Siyah / Beyaz [Varsayılan]</div>
+
+            <div class="swatch-row">
+                <div class="swatch-btn" data-theme-id="default" data-title="Siyah / Beyaz [Varsayılan]">
+                    <div class="swatch-preview-split">
+                        <div class="swatch-bg" style="background:#000000;"></div>
+                        <div class="swatch-accent" style="background:#ffffff;"></div>
+                    </div>
+                </div>
+                <div class="swatch-btn" data-theme-id="white" data-title="Beyaz">
+                    <div class="swatch-preview-split">
+                        <div class="swatch-bg" style="background:#ffffff;"></div>
+                        <div class="swatch-accent" style="background:#000000;"></div>
+                    </div>
+                </div>
+                <div class="swatch-btn" data-theme-id="gray" data-title="Gri / Beyaz">
+                    <div class="swatch-preview-split">
+                        <div class="swatch-bg" style="background:#222222;"></div>
+                        <div class="swatch-accent" style="background:#ffffff;"></div>
+                    </div>
+                </div>
+                <div class="swatch-btn" data-theme-id="blue" data-title="Siyah / Mavi">
+                    <div class="swatch-preview-split">
+                        <div class="swatch-bg" style="background:#000000;"></div>
+                        <div class="swatch-accent" style="background:#3b82f6;"></div>
+                    </div>
+                </div>
+                <div class="swatch-btn" data-theme-id="red" data-title="Siyah / Kırmızı">
+                    <div class="swatch-preview-split">
+                        <div class="swatch-bg" style="background:#000000;"></div>
+                        <div class="swatch-accent" style="background:#ef4444;"></div>
+                    </div>
+                </div>
+                <div class="swatch-btn" data-theme-id="green" data-title="Siyah / Yeşil">
+                    <div class="swatch-preview-split">
+                        <div class="swatch-bg" style="background:#000000;"></div>
+                        <div class="swatch-accent" style="background:#22c55e;"></div>
+                    </div>
+                </div>
+                <div class="swatch-btn" data-theme-id="pink" data-title="Siyah / Pembe">
+                    <div class="swatch-preview-split">
+                        <div class="swatch-bg" style="background:#000000;"></div>
+                        <div class="swatch-accent" style="background:#ec4899;"></div>
+                    </div>
+                </div>
+                <div class="swatch-btn" data-theme-id="yellow" data-title="Siyah / Sarı">
+                    <div class="swatch-preview-split">
+                        <div class="swatch-bg" style="background:#000000;"></div>
+                        <div class="swatch-accent" style="background:#eab308;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theme-subtext">Bunu daha sonra değiştirebilirsin!</div>
+        </div>
+
         <input type="text" id="username" placeholder="Enter username..." maxlength="16" autocomplete="off" spellcheck="false">
         <div id="error" class="error"></div>
         <button class="btn" id="join-btn">JOIN</button>
@@ -665,17 +855,6 @@
             <span>MENU</span>
             <button id="close-drawer-btn" class="drawer-close-btn">&times;</button>
         </div>
-        <div class="drawer-section-title">THEMES</div>
-        <div class="theme-grid">
-            <button class="theme-btn" data-theme-id="default">SIYAH / BEYAZ</button>
-            <button class="theme-btn" data-theme-id="white">BEYAZ</button>
-            <button class="theme-btn" data-theme-id="gray">GRI / BEYAZ</button>
-            <button class="theme-btn" data-theme-id="blue">SIYAH / MAVI</button>
-            <button class="theme-btn" data-theme-id="red">SIYAH / KIRMIZI</button>
-            <button class="theme-btn" data-theme-id="green">SIYAH / YESIL</button>
-            <button class="theme-btn" data-theme-id="pink">SIYAH / PEMBE</button>
-            <button class="theme-btn" data-theme-id="yellow">SIYAH / SARI</button>
-        </div>
         <div class="drawer-section-title">USERS</div>
         <div id="user-list" class="user-list"></div>
         <div class="drawer-footer" id="ping-info">PING: --ms</div>
@@ -696,6 +875,9 @@
     let audioCtx = null;
     let masterGain = null;
 
+    const currentThemeTitle = document.getElementById('current-theme-title');
+    const swatchBtns = document.querySelectorAll('.swatch-btn');
+
     function applyTheme(themeId) {
         if (themeId === 'default') {
             document.body.removeAttribute('data-theme');
@@ -703,10 +885,12 @@
             document.body.setAttribute('data-theme', themeId);
         }
 
-        const themeBtns = document.querySelectorAll('.theme-btn');
-        themeBtns.forEach((btn) => {
+        swatchBtns.forEach((btn) => {
             if (btn.getAttribute('data-theme-id') === themeId) {
                 btn.classList.add('active');
+                if (currentThemeTitle) {
+                    currentThemeTitle.innerText = btn.getAttribute('data-title');
+                }
             } else {
                 btn.classList.remove('active');
             }
@@ -719,8 +903,7 @@
         const savedTheme = localStorage.getItem('chat_theme') || 'default';
         applyTheme(savedTheme);
 
-        const themeBtns = document.querySelectorAll('.theme-btn');
-        themeBtns.forEach((btn) => {
+        swatchBtns.forEach((btn) => {
             btn.onclick = () => {
                 playClickSound();
                 triggerVibration();
