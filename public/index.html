@@ -5,150 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ChatRoom</title>
     <style>
-        :root {
-            --bg-body: #050505;
-            --bg-box: #000000;
-            --bg-panel: rgba(0, 0, 0, 0.85);
-            --text-color: #ffffff;
-            --text-muted: #888888;
-            --border-main: #ffffff;
-            --border-sub: #333333;
-            --btn-bg: #ffffff;
-            --btn-text: #000000;
-            --input-bg: #000000;
-            --input-text: #ffffff;
-            --accent: #22c55e;
-            --link-color: #3b82f6;
-            --quote-bg: #151515;
-            --star-opacity: 0.5;
-        }
-
-        [data-theme="white"] {
-            --bg-body: #e5e5e5;
-            --bg-box: #ffffff;
-            --bg-panel: rgba(255, 255, 255, 0.9);
-            --text-color: #000000;
-            --text-muted: #666666;
-            --border-main: #000000;
-            --border-sub: #cccccc;
-            --btn-bg: #000000;
-            --btn-text: #ffffff;
-            --input-bg: #ffffff;
-            --input-text: #000000;
-            --accent: #16a34a;
-            --link-color: #2563eb;
-            --quote-bg: #f0f0f0;
-            --star-opacity: 0.15;
-        }
-
-        [data-theme="gray"] {
-            --bg-body: #121212;
-            --bg-box: #222222;
-            --bg-panel: rgba(34, 34, 34, 0.85);
-            --text-color: #ffffff;
-            --text-muted: #aaaaaa;
-            --border-main: #ffffff;
-            --border-sub: #444444;
-            --btn-bg: #ffffff;
-            --btn-text: #000000;
-            --input-bg: #1a1a1a;
-            --input-text: #ffffff;
-            --accent: #22c55e;
-            --link-color: #60a5fa;
-            --quote-bg: #1a1a1a;
-            --star-opacity: 0.4;
-        }
-
-        [data-theme="blue"] {
-            --bg-body: #020813;
-            --bg-box: #000000;
-            --bg-panel: rgba(0, 0, 0, 0.85);
-            --text-color: #60a5fa;
-            --text-muted: #2563eb;
-            --border-main: #3b82f6;
-            --border-sub: #1e3a8a;
-            --btn-bg: #3b82f6;
-            --btn-text: #000000;
-            --input-bg: #000000;
-            --input-text: #93c5fd;
-            --accent: #60a5fa;
-            --link-color: #93c5fd;
-            --quote-bg: #0f172a;
-            --star-opacity: 0.5;
-        }
-
-        [data-theme="red"] {
-            --bg-body: #110303;
-            --bg-box: #000000;
-            --bg-panel: rgba(0, 0, 0, 0.85);
-            --text-color: #f87171;
-            --text-muted: #dc2626;
-            --border-main: #ef4444;
-            --border-sub: #7f1d1d;
-            --btn-bg: #ef4444;
-            --btn-text: #000000;
-            --input-bg: #000000;
-            --input-text: #fca5a5;
-            --accent: #f87171;
-            --link-color: #fca5a5;
-            --quote-bg: #2d0a0a;
-            --star-opacity: 0.5;
-        }
-
-        [data-theme="green"] {
-            --bg-body: #021206;
-            --bg-box: #000000;
-            --bg-panel: rgba(0, 0, 0, 0.85);
-            --text-color: #4ade80;
-            --text-muted: #16a34a;
-            --border-main: #22c55e;
-            --border-sub: #14532d;
-            --btn-bg: #22c55e;
-            --btn-text: #000000;
-            --input-bg: #000000;
-            --input-text: #86efac;
-            --accent: #4ade80;
-            --link-color: #86efac;
-            --quote-bg: #062e0e;
-            --star-opacity: 0.5;
-        }
-
-        [data-theme="pink"] {
-            --bg-body: #12020a;
-            --bg-box: #000000;
-            --bg-panel: rgba(0, 0, 0, 0.85);
-            --text-color: #f472b6;
-            --text-muted: #db2777;
-            --border-main: #ec4899;
-            --border-sub: #831843;
-            --btn-bg: #ec4899;
-            --btn-text: #000000;
-            --input-bg: #000000;
-            --input-text: #fbcfe8;
-            --accent: #f472b6;
-            --link-color: #fbcfe8;
-            --quote-bg: #2e071b;
-            --star-opacity: 0.5;
-        }
-
-        [data-theme="yellow"] {
-            --bg-body: #121002;
-            --bg-box: #000000;
-            --bg-panel: rgba(0, 0, 0, 0.85);
-            --text-color: #fde047;
-            --text-muted: #ca8a04;
-            --border-main: #eab308;
-            --border-sub: #713f12;
-            --btn-bg: #eab308;
-            --btn-text: #000000;
-            --input-bg: #000000;
-            --input-text: #fef08a;
-            --accent: #fde047;
-            --link-color: #fef08a;
-            --quote-bg: #2e2806;
-            --star-opacity: 0.5;
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
@@ -160,15 +16,14 @@
             direction: ltr;
         }
         body {
-            background-color: var(--bg-body);
-            color: var(--text-color);
+            background-color: #050505;
+            color: #fff;
             width: 100vw;
             height: 100dvh;
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: background-color 0.2s ease;
         }
         .container {
             width: 100%;
@@ -177,18 +32,18 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            border-left: 1px solid var(--border-sub);
-            border-right: 1px solid var(--border-sub);
+            border-left: 1px solid #222;
+            border-right: 1px solid #222;
             position: relative;
-            background: var(--bg-box);
+            background: #000;
         }
         @media (min-width: 769px) {
             .container {
                 height: 92dvh;
                 max-height: 800px;
-                border: 1px solid var(--border-sub);
+                border: 1px solid #333;
                 border-radius: 8px;
-                box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+                box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
             }
         }
         .screen {
@@ -196,180 +51,35 @@
             display: flex;
             flex-direction: column;
             padding: 16px;
-            overflow-y: auto;
+            overflow: hidden;
             height: 100%;
             position: relative;
         }
         .hidden {
             display: none !important;
         }
-
-        /* Login Screen Layout */
         #login-screen {
             justify-content: center;
             align-items: center;
-            gap: 12px;
-            max-width: 420px;
+            gap: 16px;
+            max-width: 400px;
             margin: 0 auto;
             width: 100%;
         }
         .title {
-            font-size: 28px;
+            font-size: 36px;
             font-weight: bold;
             letter-spacing: 2px;
-            color: var(--text-color);
-            text-align: center;
+            margin-bottom: 10px;
         }
-
-        /* Theme Selector Card (Login Screen) */
-        .theme-card {
-            width: 100%;
-            background: var(--bg-panel);
-            border: 1px solid var(--border-main);
-            border-radius: 12px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        }
-        .theme-card-header {
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            text-align: center;
-        }
-
-        /* Mini Live App Preview */
-        .preview-box {
-            width: 100%;
-            background: var(--bg-box);
-            border: 1px solid var(--border-sub);
-            border-radius: 6px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            pointer-events: none;
-        }
-        .preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-sub);
-            padding-bottom: 6px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-        .preview-online {
-            font-size: 9px;
-            color: var(--accent);
-        }
-        .preview-msg {
-            padding: 6px 8px;
-            border: 1px solid var(--border-sub);
-            font-size: 11px;
-            background: var(--bg-panel);
-            position: relative;
-            line-height: 1.2;
-        }
-        .preview-msg-reply {
-            background: var(--quote-bg);
-            border-left: 2px solid var(--border-main);
-            padding: 2px 4px;
-            font-size: 9px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-        .preview-input-row {
-            display: flex;
-            gap: 4px;
-        }
-        .preview-input-mock {
-            flex: 1;
-            border: 1px solid var(--border-main);
-            background: var(--input-bg);
-            color: var(--text-muted);
-            font-size: 9px;
-            padding: 6px;
-        }
-        .preview-btn-mock {
-            background: var(--btn-bg);
-            color: var(--btn-text);
-            font-size: 9px;
-            font-weight: bold;
-            padding: 6px 10px;
-        }
-
-        /* Theme Label & Swatches */
-        .theme-label {
-            font-size: 13px;
-            font-weight: bold;
-            color: var(--text-color);
-            text-align: center;
-            letter-spacing: 0.5px;
-        }
-        .swatch-row {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            width: 100%;
-            padding: 6px 2px;
-            justify-content: flex-start;
-            scrollbar-width: none;
-        }
-        .swatch-row::-webkit-scrollbar {
-            display: none;
-        }
-        .swatch-btn {
-            flex: 0 0 42px;
-            height: 42px;
-            border-radius: 8px;
-            border: 2px solid var(--border-sub);
-            cursor: pointer;
-            position: relative;
-            background: #000;
-            overflow: hidden;
-            transition: transform 0.15s ease, border-color 0.15s ease;
-        }
-        .swatch-btn:active {
-            transform: scale(0.92);
-        }
-        .swatch-btn.active {
-            border-color: var(--border-main);
-            box-shadow: 0 0 0 2px var(--bg-box), 0 0 0 4px var(--border-main);
-        }
-        .swatch-preview-split {
-            width: 100%;
-            height: 100%;
-            display: flex;
-        }
-        .swatch-bg {
-            flex: 1;
-            height: 100%;
-        }
-        .swatch-accent {
-            width: 40%;
-            height: 100%;
-        }
-        .theme-subtext {
-            font-size: 10px;
-            color: var(--text-muted);
-            text-align: center;
-            letter-spacing: 0.5px;
-        }
-
-        /* General Controls */
         input[type="text"] {
             width: 100%;
-            padding: 12px;
-            background: var(--input-bg);
-            color: var(--input-text);
-            border: 1px solid var(--border-main);
+            padding: 14px;
+            background: #000;
+            color: #fff;
+            border: 1px solid #fff;
             outline: none;
-            font-size: 15px;
+            font-size: 16px;
             text-align: left;
             direction: ltr;
             user-select: text;
@@ -377,30 +87,28 @@
         }
         .btn {
             width: 100%;
-            padding: 12px;
-            background: var(--btn-bg);
-            color: var(--btn-text);
+            padding: 14px;
+            background: #fff;
+            color: #000;
             border: none;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
             flex-shrink: 0;
         }
         .btn:active {
-            opacity: 0.7;
+            background: #aaa;
         }
         .error {
             color: #ff3333;
-            font-size: 13px;
-            min-height: 16px;
+            font-size: 14px;
+            min-height: 18px;
             text-align: center;
         }
-
-        /* Chat UI */
         .chat-header {
             padding: 14px;
-            border-bottom: 1px solid var(--border-main);
+            border-bottom: 1px solid #fff;
             font-weight: bold;
             display: flex;
             justify-content: space-between;
@@ -409,20 +117,19 @@
             letter-spacing: 1px;
             position: relative;
             z-index: 2;
-            background: var(--bg-panel);
-            color: var(--text-color);
+            background: rgba(0, 0, 0, 0.85);
         }
         .online-badge {
             font-size: 12px;
             font-weight: bold;
             letter-spacing: 0.5px;
-            color: var(--text-color);
+            color: #fff;
             display: flex;
             align-items: center;
             gap: 6px;
         }
         .online-badge .dot, #online-count {
-            color: var(--accent);
+            color: #22c55e;
         }
         .stars-bg {
             position: absolute;
@@ -433,21 +140,25 @@
             pointer-events: none;
             z-index: 0;
             background-image: 
-                radial-gradient(1px 1px at 25px 20px, var(--border-main), rgba(0,0,0,0)),
-                radial-gradient(1.5px 1.5px at 75px 60px, var(--border-main), rgba(0,0,0,0)),
-                radial-gradient(1px 1px at 120px 140px, var(--border-main), rgba(0,0,0,0)),
-                radial-gradient(2px 2px at 180px 90px, var(--border-main), rgba(0,0,0,0)),
-                radial-gradient(1px 1px at 220px 30px, var(--border-main), rgba(0,0,0,0)),
-                radial-gradient(1.5px 1.5px at 280px 180px, var(--border-main), rgba(0,0,0,0));
+                radial-gradient(1px 1px at 25px 20px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 75px 60px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 120px 140px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 180px 90px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 220px 30px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 280px 180px, #ffffff, rgba(0,0,0,0));
             background-repeat: repeat;
             background-size: 300px 300px;
-            opacity: var(--star-opacity);
+            opacity: 0.5;
             will-change: transform;
             animation: fallStars 18s linear infinite;
         }
         @keyframes fallStars {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(300px); }
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(300px);
+            }
         }
         .edge-handle {
             position: absolute;
@@ -467,7 +178,7 @@
             transform: translateY(-50%);
             width: 3px;
             height: 48px;
-            background: var(--text-muted);
+            background: rgba(255, 255, 255, 0.25);
             border-radius: 2px 0 0 2px;
         }
         #messages {
@@ -482,23 +193,22 @@
         }
         .message {
             padding: 10px 32px 22px 10px;
-            border: 1px solid var(--border-sub);
+            border: 1px solid #333;
             word-break: break-word;
             text-align: left;
             direction: ltr;
             font-size: 15px;
             line-height: 1.4;
             position: relative;
-            background: var(--bg-panel);
-            color: var(--text-color);
+            background: rgba(0, 0, 0, 0.75);
         }
         .msg-reply-quote {
-            background: var(--quote-bg);
-            border-left: 2px solid var(--border-main);
+            background: #151515;
+            border-left: 2px solid #fff;
             padding: 4px 8px;
             margin-bottom: 6px;
             font-size: 12px;
-            color: var(--text-muted);
+            color: #aaa;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -509,7 +219,7 @@
             right: 6px;
             background: transparent;
             border: none;
-            color: var(--text-muted);
+            color: #888;
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
@@ -517,25 +227,25 @@
             line-height: 1;
         }
         .msg-options-btn:hover, .msg-options-btn:active {
-            color: var(--text-color);
+            color: #fff;
         }
         .msg-menu {
             position: absolute;
             top: 28px;
             right: 6px;
-            background: var(--bg-box);
-            border: 1px solid var(--border-main);
+            background: #000;
+            border: 1px solid #fff;
             z-index: 30;
             width: 80px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
         }
         .msg-menu-item {
             padding: 8px 0;
             font-size: 12px;
             font-weight: bold;
-            color: var(--text-color);
+            color: #fff;
             cursor: pointer;
-            border-bottom: 1px solid var(--border-sub);
+            border-bottom: 1px solid #222;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             white-space: nowrap;
@@ -547,11 +257,11 @@
             border-bottom: none;
         }
         .msg-menu-item:hover, .msg-menu-item:active {
-            background: var(--btn-bg);
-            color: var(--btn-text);
+            background: #fff;
+            color: #000;
         }
         .message a {
-            color: var(--link-color);
+            color: #3b82f6;
             text-decoration: underline;
             word-break: break-all;
         }
@@ -560,7 +270,7 @@
             bottom: 4px;
             right: 8px;
             font-size: 10px;
-            color: var(--text-muted);
+            color: #666;
         }
         .system-msg {
             font-size: 12px;
@@ -574,29 +284,34 @@
             position: relative;
             z-index: 1;
         }
-        .system-msg.join { color: #22c55e; }
-        .system-msg.leave { color: #ef4444; }
-        .system-msg.info { color: var(--link-color); }
-
+        .system-msg.join {
+            color: #22c55e;
+        }
+        .system-msg.leave {
+            color: #ef4444;
+        }
+        .system-msg.info {
+            color: #3b82f6;
+        }
         .input-area-wrapper {
             display: flex;
             flex-direction: column;
-            border-top: 1px solid var(--border-main);
+            border-top: 1px solid #fff;
             flex-shrink: 0;
             width: 100%;
             position: relative;
             z-index: 2;
-            background: var(--bg-box);
+            background: #000;
         }
         .reply-preview {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--quote-bg);
-            border-bottom: 1px solid var(--border-sub);
+            background: #111;
+            border-bottom: 1px solid #333;
             padding: 8px 12px;
             font-size: 13px;
-            color: var(--text-color);
+            color: #ccc;
         }
         .reply-preview-content {
             overflow: hidden;
@@ -606,14 +321,14 @@
         .reply-preview-close {
             background: none;
             border: none;
-            color: var(--text-muted);
+            color: #888;
             font-size: 18px;
             line-height: 1;
             cursor: pointer;
             padding: 0 4px;
         }
         .reply-preview-close:hover {
-            color: var(--text-color);
+            color: #fff;
         }
         .input-area {
             display: flex;
@@ -627,11 +342,9 @@
         }
         .input-area .send-btn {
             width: auto;
-            padding: 12px 20px;
+            padding: 14px 20px;
             white-space: nowrap;
         }
-
-        /* Drawer / User List */
         .drawer-backdrop {
             position: absolute;
             top: 0;
@@ -647,8 +360,8 @@
             right: 0;
             width: 280px;
             height: 100%;
-            background: var(--bg-box);
-            border-left: 1px solid var(--border-main);
+            background: #000;
+            border-left: 1px solid #fff;
             z-index: 20;
             display: flex;
             flex-direction: column;
@@ -670,19 +383,18 @@
         }
         .drawer-header {
             padding: 14px;
-            border-bottom: 1px solid var(--border-main);
+            border-bottom: 1px solid #fff;
             font-weight: bold;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 14px;
             letter-spacing: 1px;
-            color: var(--text-color);
         }
         .drawer-close-btn {
             background: none;
             border: none;
-            color: var(--text-color);
+            color: #fff;
             font-size: 18px;
             line-height: 1;
             font-weight: bold;
@@ -690,16 +402,7 @@
             padding: 0 4px;
         }
         .drawer-close-btn:active {
-            opacity: 0.5;
-        }
-        .drawer-section-title {
-            padding: 10px 12px 6px 12px;
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border-sub);
-            text-transform: uppercase;
+            color: #888;
         }
         .user-list {
             flex: 1;
@@ -711,8 +414,7 @@
         }
         .user-item {
             padding: 10px;
-            border: 1px solid var(--border-sub);
-            color: var(--text-color);
+            border: 1px solid #222;
             font-size: 14px;
             cursor: pointer;
             display: flex;
@@ -720,7 +422,7 @@
             align-items: center;
         }
         .user-item:active {
-            border-color: var(--border-main);
+            border-color: #fff;
         }
         .user-info-box {
             display: flex;
@@ -729,15 +431,15 @@
         }
         .user-tag {
             font-size: 10px;
-            color: var(--text-muted);
-            border: 1px solid var(--border-sub);
+            color: #666;
+            border: 1px solid #333;
             padding: 2px 4px;
         }
         .drawer-footer {
             padding: 12px;
-            border-top: 1px solid var(--border-sub);
+            border-top: 1px solid #222;
             font-size: 11px;
-            color: var(--text-muted);
+            color: #666;
             text-align: center;
             letter-spacing: 0.5px;
         }
@@ -748,81 +450,6 @@
 <div class="container">
     <div id="login-screen" class="screen">
         <div class="title">CHAT</div>
-
-        <div class="theme-card">
-            <div class="theme-card-header">APP THEME</div>
-            
-            <div class="preview-box">
-                <div class="preview-header">
-                    <span>Mesajlar</span>
-                    <span class="preview-online">• ONLINE</span>
-                </div>
-                <div class="preview-msg">
-                    <div class="preview-msg-reply">noodomie: Selam!</div>
-                    <strong>Alex:</strong> Tema önizlemesi harika görünüyor.
-                </div>
-                <div class="preview-input-row">
-                    <div class="preview-input-mock">Mesaj yaz...</div>
-                    <div class="preview-btn-mock">GONDER</div>
-                </div>
-            </div>
-
-            <div class="theme-label" id="current-theme-title">Siyah / Beyaz [Varsayılan]</div>
-
-            <div class="swatch-row">
-                <div class="swatch-btn" data-theme-id="default" data-title="Siyah / Beyaz [Varsayılan]">
-                    <div class="swatch-preview-split">
-                        <div class="swatch-bg" style="background:#000000;"></div>
-                        <div class="swatch-accent" style="background:#ffffff;"></div>
-                    </div>
-                </div>
-                <div class="swatch-btn" data-theme-id="white" data-title="Beyaz">
-                    <div class="swatch-preview-split">
-                        <div class="swatch-bg" style="background:#ffffff;"></div>
-                        <div class="swatch-accent" style="background:#000000;"></div>
-                    </div>
-                </div>
-                <div class="swatch-btn" data-theme-id="gray" data-title="Gri / Beyaz">
-                    <div class="swatch-preview-split">
-                        <div class="swatch-bg" style="background:#222222;"></div>
-                        <div class="swatch-accent" style="background:#ffffff;"></div>
-                    </div>
-                </div>
-                <div class="swatch-btn" data-theme-id="blue" data-title="Siyah / Mavi">
-                    <div class="swatch-preview-split">
-                        <div class="swatch-bg" style="background:#000000;"></div>
-                        <div class="swatch-accent" style="background:#3b82f6;"></div>
-                    </div>
-                </div>
-                <div class="swatch-btn" data-theme-id="red" data-title="Siyah / Kırmızı">
-                    <div class="swatch-preview-split">
-                        <div class="swatch-bg" style="background:#000000;"></div>
-                        <div class="swatch-accent" style="background:#ef4444;"></div>
-                    </div>
-                </div>
-                <div class="swatch-btn" data-theme-id="green" data-title="Siyah / Yeşil">
-                    <div class="swatch-preview-split">
-                        <div class="swatch-bg" style="background:#000000;"></div>
-                        <div class="swatch-accent" style="background:#22c55e;"></div>
-                    </div>
-                </div>
-                <div class="swatch-btn" data-theme-id="pink" data-title="Siyah / Pembe">
-                    <div class="swatch-preview-split">
-                        <div class="swatch-bg" style="background:#000000;"></div>
-                        <div class="swatch-accent" style="background:#ec4899;"></div>
-                    </div>
-                </div>
-                <div class="swatch-btn" data-theme-id="yellow" data-title="Siyah / Sarı">
-                    <div class="swatch-preview-split">
-                        <div class="swatch-bg" style="background:#000000;"></div>
-                        <div class="swatch-accent" style="background:#eab308;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="theme-subtext">Bunu daha sonra değiştirebilirsin!</div>
-        </div>
-
         <input type="text" id="username" placeholder="Enter username..." maxlength="16" autocomplete="off" spellcheck="false">
         <div id="error" class="error"></div>
         <button class="btn" id="join-btn">JOIN</button>
@@ -852,10 +479,9 @@
     <div id="drawer-backdrop" class="drawer-backdrop hidden"></div>
     <div id="drawer" class="drawer">
         <div class="drawer-header">
-            <span>MENU</span>
+            <span>USERS</span>
             <button id="close-drawer-btn" class="drawer-close-btn">&times;</button>
         </div>
-        <div class="drawer-section-title">USERS</div>
         <div id="user-list" class="user-list"></div>
         <div class="drawer-footer" id="ping-info">PING: --ms</div>
     </div>
@@ -874,44 +500,6 @@
 
     let audioCtx = null;
     let masterGain = null;
-
-    const currentThemeTitle = document.getElementById('current-theme-title');
-    const swatchBtns = document.querySelectorAll('.swatch-btn');
-
-    function applyTheme(themeId) {
-        if (themeId === 'default') {
-            document.body.removeAttribute('data-theme');
-        } else {
-            document.body.setAttribute('data-theme', themeId);
-        }
-
-        swatchBtns.forEach((btn) => {
-            if (btn.getAttribute('data-theme-id') === themeId) {
-                btn.classList.add('active');
-                if (currentThemeTitle) {
-                    currentThemeTitle.innerText = btn.getAttribute('data-title');
-                }
-            } else {
-                btn.classList.remove('active');
-            }
-        });
-
-        localStorage.setItem('chat_theme', themeId);
-    }
-
-    function initTheme() {
-        const savedTheme = localStorage.getItem('chat_theme') || 'default';
-        applyTheme(savedTheme);
-
-        swatchBtns.forEach((btn) => {
-            btn.onclick = () => {
-                playClickSound();
-                triggerVibration();
-                const themeId = btn.getAttribute('data-theme-id');
-                applyTheme(themeId);
-            };
-        });
-    }
 
     function initAudio() {
         if (!audioCtx) {
@@ -1398,8 +986,6 @@
             });
         }, 5000);
     }
-
-    initTheme();
 </script>
 </body>
 </html>
