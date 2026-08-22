@@ -505,7 +505,7 @@
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             masterGain = audioCtx.createGain();
-            masterGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            masterGain.gain.setValueAtTime(1.0, audioCtx.currentTime);
             masterGain.connect(audioCtx.destination);
         }
         if (audioCtx.state === 'suspended') {
@@ -521,16 +521,16 @@
             const gain = audioCtx.createGain();
 
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, now);
-            osc.frequency.exponentialRampToValueAtTime(400, now + 0.02);
+            osc.frequency.setValueAtTime(900, now);
+            osc.frequency.exponentialRampToValueAtTime(450, now + 0.06);
 
-            gain.gain.setValueAtTime(0.15, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+            gain.gain.setValueAtTime(0.8, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.06);
 
             osc.connect(gain);
             gain.connect(masterGain);
             osc.start(now);
-            osc.stop(now + 0.02);
+            osc.stop(now + 0.06);
         } catch (e) {}
     }
 
@@ -542,16 +542,16 @@
             const gain = audioCtx.createGain();
 
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(320, now);
-            osc.frequency.exponentialRampToValueAtTime(680, now + 0.07);
+            osc.frequency.setValueAtTime(350, now);
+            osc.frequency.exponentialRampToValueAtTime(750, now + 0.12);
 
-            gain.gain.setValueAtTime(0.25, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+            gain.gain.setValueAtTime(0.9, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
 
             osc.connect(gain);
             gain.connect(masterGain);
             osc.start(now);
-            osc.stop(now + 0.07);
+            osc.stop(now + 0.12);
         } catch (e) {}
     }
 
@@ -564,23 +564,23 @@
             const gain1 = audioCtx.createGain();
             osc1.type = 'sine';
             osc1.frequency.setValueAtTime(1046.50, now);
-            gain1.gain.setValueAtTime(0.25, now);
-            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            gain1.gain.setValueAtTime(0.9, now);
+            gain1.gain.linearRampToValueAtTime(0.01, now + 0.12);
             osc1.connect(gain1);
             gain1.connect(masterGain);
             osc1.start(now);
-            osc1.stop(now + 0.1);
+            osc1.stop(now + 0.12);
 
             const osc2 = audioCtx.createOscillator();
             const gain2 = audioCtx.createGain();
             osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(1318.51, now + 0.06);
-            gain2.gain.setValueAtTime(0.25, now + 0.06);
-            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+            osc2.frequency.setValueAtTime(1318.51, now + 0.08);
+            gain2.gain.setValueAtTime(0.9, now + 0.08);
+            gain2.gain.linearRampToValueAtTime(0.01, now + 0.22);
             osc2.connect(gain2);
             gain2.connect(masterGain);
-            osc2.start(now + 0.06);
-            osc2.stop(now + 0.18);
+            osc2.start(now + 0.08);
+            osc2.stop(now + 0.22);
         } catch (e) {}
     }
 
@@ -593,23 +593,23 @@
             const gain1 = audioCtx.createGain();
             osc1.type = 'sine';
             osc1.frequency.setValueAtTime(783.99, now);
-            gain1.gain.setValueAtTime(0.2, now);
-            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+            gain1.gain.setValueAtTime(0.8, now);
+            gain1.gain.linearRampToValueAtTime(0.01, now + 0.12);
             osc1.connect(gain1);
             gain1.connect(masterGain);
             osc1.start(now);
-            osc1.stop(now + 0.09);
+            osc1.stop(now + 0.12);
 
             const osc2 = audioCtx.createOscillator();
             const gain2 = audioCtx.createGain();
             osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(1046.50, now + 0.07);
-            gain2.gain.setValueAtTime(0.2, now + 0.07);
-            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc2.frequency.setValueAtTime(1046.50, now + 0.08);
+            gain2.gain.setValueAtTime(0.8, now + 0.08);
+            gain2.gain.linearRampToValueAtTime(0.01, now + 0.25);
             osc2.connect(gain2);
             gain2.connect(masterGain);
-            osc2.start(now + 0.07);
-            osc2.stop(now + 0.2);
+            osc2.start(now + 0.08);
+            osc2.stop(now + 0.25);
         } catch (e) {}
     }
 
@@ -622,23 +622,23 @@
             const gain1 = audioCtx.createGain();
             osc1.type = 'sine';
             osc1.frequency.setValueAtTime(659.25, now);
-            gain1.gain.setValueAtTime(0.18, now);
-            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+            gain1.gain.setValueAtTime(0.8, now);
+            gain1.gain.linearRampToValueAtTime(0.01, now + 0.12);
             osc1.connect(gain1);
             gain1.connect(masterGain);
             osc1.start(now);
-            osc1.stop(now + 0.09);
+            osc1.stop(now + 0.12);
 
             const osc2 = audioCtx.createOscillator();
             const gain2 = audioCtx.createGain();
             osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(523.25, now + 0.07);
-            gain2.gain.setValueAtTime(0.18, now + 0.07);
-            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc2.frequency.setValueAtTime(523.25, now + 0.08);
+            gain2.gain.setValueAtTime(0.8, now + 0.08);
+            gain2.gain.linearRampToValueAtTime(0.01, now + 0.25);
             osc2.connect(gain2);
             gain2.connect(masterGain);
-            osc2.start(now + 0.07);
-            osc2.stop(now + 0.2);
+            osc2.start(now + 0.08);
+            osc2.stop(now + 0.25);
         } catch (e) {}
     }
 
