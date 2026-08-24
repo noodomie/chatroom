@@ -243,7 +243,7 @@
             background: #000;
             border: 1px solid #fff;
             z-index: 30;
-            width: 80px;
+            width: 90px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
         }
         .msg-menu-item {
@@ -276,6 +276,13 @@
             position: absolute;
             bottom: 4px;
             right: 8px;
+            font-size: 10px;
+            color: #666;
+        }
+        .msg-edited {
+            position: absolute;
+            bottom: 4px;
+            left: 8px;
             font-size: 10px;
             color: #666;
         }
@@ -504,6 +511,7 @@
     let touchEndX = 0;
     let activeMenu = null;
     let currentReplyData = null;
+    let currentEditData = null;
 
     let audioCtx = null;
     let masterGain = null;
@@ -703,6 +711,7 @@
     const replyPreviewCloseBtn = document.getElementById('reply-preview-close-btn');
 
     function setReply(user, text) {
+        clearEdit();
         currentReplyData = { user: user, text: text };
         replyPreviewText.innerHTML = 'Replying to <strong>' + escapeHtml(user) + '</strong>: ' + escapeHtml(text);
         replyPreview.classList.remove('hidden');
@@ -715,10 +724,30 @@
         replyPreviewText.innerHTML = '';
     }
 
+    function setEdit(id, textSpan, editedSpan) {
+        clearReply();
+        currentEditData = { id: id, textSpan: textSpan, editedSpan: editedSpan };
+        msgInput.value = textSpan.innerText;
+        replyPreviewText.innerHTML = 'Editing message...';
+        replyPreview.classList.remove('hidden');
+        msgInput.focus();
+    }
+
+    function clearEdit() {
+        currentEditData = null;
+        replyPreview.classList.add('hidden');
+        replyPreviewText.innerHTML = '';
+    }
+
     replyPreviewCloseBtn.onclick = () => {
         playClickSound();
         triggerVibration();
-        clearReply();
+        if (currentEditData) {
+            msgInput.value = '';
+            clearEdit();
+        } else {
+            clearReply();
+        }
     };
 
     function openDrawer() {
@@ -826,6 +855,8 @@
 
     function renderMessage(data) {
         const div = document.createElement('div');
+        const msgId = data.id || ('msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5));
+        div.setAttribute('data-id', msgId);
 
         if (data.type === 'system') {
             div.className = 'system-msg ' + data.event;
@@ -833,14 +864,31 @@
         } else {
             div.className = 'message';
             
-            let replyHtml = '';
             if (data.replyTo) {
-                replyHtml = '<div class="msg-reply-quote"><strong>' + escapeHtml(data.replyTo.user) + '</strong>: ' + escapeHtml(data.replyTo.text) + '</div>';
+                const replyDiv = document.createElement('div');
+                replyDiv.className = 'msg-reply-quote';
+                replyDiv.innerHTML = '<strong>' + escapeHtml(data.replyTo.user) + '</strong>: ' + escapeHtml(data.replyTo.text);
+                div.appendChild(replyDiv);
             }
 
-            const userTag = '<strong>' + escapeHtml(data.user) + ':</strong> ';
-            const msgText = formatMessageText(data.text);
-            const timeHtml = '<span class="msg-time">' + escapeHtml(data.time || '') + '</span>';
+            const userSpan = document.createElement('span');
+            userSpan.innerHTML = '<strong>' + escapeHtml(data.user) + ':</strong> ';
+            div.appendChild(userSpan);
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'msg-text-content';
+            textSpan.innerHTML = formatMessageText(data.text);
+            div.appendChild(textSpan);
+
+            const editedSpan = document.createElement('span');
+            editedSpan.className = 'msg-edited' + (data.isEdited ? '' : ' hidden');
+            editedSpan.innerText = 'edited';
+            div.appendChild(editedSpan);
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'msg-time';
+            timeSpan.innerText = data.time || '';
+            div.appendChild(timeSpan);
 
             const menuBtn = document.createElement('button');
             menuBtn.className = 'msg-options-btn';
@@ -865,7 +913,7 @@
                 copyItem.innerText = 'COPY';
                 copyItem.onclick = () => {
                     playClickSound();
-                    navigator.clipboard.writeText(data.text);
+                    navigator.clipboard.writeText(textSpan.innerText);
                     closeActiveMenu();
                 };
 
@@ -874,17 +922,41 @@
                 replyItem.innerText = 'REPLY';
                 replyItem.onclick = () => {
                     playClickSound();
-                    setReply(data.user, data.text);
+                    setReply(data.user, textSpan.innerText);
                     closeActiveMenu();
                 };
 
                 menu.appendChild(copyItem);
                 menu.appendChild(replyItem);
+
+                if (data.user === myUsername) {
+                    const editItem = document.createElement('div');
+                    editItem.className = 'msg-menu-item';
+                    editItem.innerText = 'EDIT';
+                    editItem.onclick = () => {
+                        playClickSound();
+                        setEdit(msgId, textSpan, editedSpan);
+                        closeActiveMenu();
+                    };
+
+                    const deleteItem = document.createElement('div');
+                    deleteItem.className = 'msg-menu-item';
+                    deleteItem.innerText = 'DELETE';
+                    deleteItem.onclick = () => {
+                        playClickSound();
+                        div.remove();
+                        socket.emit('delete message', { id: msgId });
+                        closeActiveMenu();
+                    };
+
+                    menu.appendChild(editItem);
+                    menu.appendChild(deleteItem);
+                }
+
                 div.appendChild(menu);
                 activeMenu = menu;
             };
 
-            div.innerHTML = replyHtml + userTag + msgText + timeHtml;
             div.appendChild(menuBtn);
         }
         messagesDiv.appendChild(div);
@@ -897,6 +969,23 @@
 
         if (trimmedMsg.length === 0) return;
 
+        if (currentEditData) {
+            playSendSound();
+            triggerVibration();
+            
+            currentEditData.textSpan.innerHTML = formatMessageText(trimmedMsg);
+            currentEditData.editedSpan.classList.remove('hidden');
+            
+            socket.emit('edit message', {
+                id: currentEditData.id,
+                text: trimmedMsg
+            });
+
+            msgInput.value = '';
+            clearEdit();
+            return;
+        }
+
         const now = Date.now();
         if (now - lastSendTime < 1000) return;
 
@@ -904,7 +993,9 @@
         triggerVibration();
         lastSendTime = now;
 
+        const msgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
         const msgData = {
+            id: msgId,
             type: 'user',
             user: myUsername,
             text: trimmedMsg,
@@ -921,6 +1012,7 @@
         renderMessage(msgData);
 
         socket.emit('chat message', {
+            id: msgId,
             text: trimmedMsg,
             replyTo: currentReplyData
         });
@@ -945,6 +1037,27 @@
         } else if (data.type === 'user') {
             if (data.user !== myUsername) {
                 playMessageSound();
+            }
+        }
+    });
+
+    socket.on('delete message', (data) => {
+        const msgEl = document.querySelector('[data-id="' + data.id + '"]');
+        if (msgEl) {
+            msgEl.remove();
+        }
+    });
+
+    socket.on('edit message', (data) => {
+        const msgEl = document.querySelector('[data-id="' + data.id + '"]');
+        if (msgEl) {
+            const textSpan = msgEl.querySelector('.msg-text-content');
+            const editedSpan = msgEl.querySelector('.msg-edited');
+            if (textSpan) {
+                textSpan.innerHTML = formatMessageText(data.text);
+            }
+            if (editedSpan) {
+                editedSpan.classList.remove('hidden');
             }
         }
     });
