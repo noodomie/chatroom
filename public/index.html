@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ChatRoom</title>
-    <!-- Google Fonts Entegrasyonu (Share Tech Mono + Türkçe Destekli JetBrains Mono) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -723,6 +722,7 @@
     };
 
     function openDrawer() {
+        if (chatScreen.classList.contains('hidden')) return;
         closeActiveMenu();
         drawer.classList.remove('peek');
         drawer.classList.add('open');
@@ -778,6 +778,7 @@
     }, false);
 
     function handleSwipe() {
+        if (chatScreen.classList.contains('hidden')) return;
         const diff = touchEndX - touchStartX;
         const windowWidth = window.innerWidth;
         if ((touchStartX > windowWidth - 40 || touchStartX <= 20) && diff < -30) {
