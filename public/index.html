@@ -1,15 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ChatRoom</title>
+    <!-- Google Fonts Entegrasyonu (Share Tech Mono + Türkçe Destekli JetBrains Mono) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: monospace, sans-serif;
+            font-family: 'Share Tech Mono', 'JetBrains Mono', monospace, sans-serif;
             user-select: none;
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
@@ -84,6 +88,7 @@
             direction: ltr;
             user-select: text;
             -webkit-user-select: text;
+            font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
         }
         .btn {
             width: 100%;
@@ -96,6 +101,7 @@
             cursor: pointer;
             text-transform: uppercase;
             flex-shrink: 0;
+            font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
         }
         .btn:active {
             background: #aaa;
@@ -201,6 +207,7 @@
             line-height: 1.4;
             position: relative;
             background: rgba(0, 0, 0, 0.75);
+            font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
         }
         .msg-reply-quote {
             background: #151515;
@@ -225,6 +232,7 @@
             cursor: pointer;
             padding: 2px 6px;
             line-height: 1;
+            font-family: inherit;
         }
         .msg-options-btn:hover, .msg-options-btn:active {
             color: #fff;
@@ -785,7 +793,7 @@
         playClickSound();
         triggerVibration();
         const name = usernameInput.value.trim();
-        const regex = /^[a-zA-Z]{3,16}$/;
+        const regex = /^[a-zA-Z0-9_]{3,16}$/;
 
         if (!regex.test(name)) {
             errorDiv.innerText = 'Invalid Name';
