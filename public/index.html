@@ -22,9 +22,12 @@
             background-color: #050505;
             color: #fff;
             width: 100%;
-            height: 100dvh;
-            max-height: -webkit-fill-available;
+            height: 100%;
+            position: fixed; /* Mobil kaydırmayı kilitler */
+            top: 0;
+            left: 0;
             overflow: hidden;
+            overscroll-behavior: none;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -32,19 +35,25 @@
         .container {
             width: 100%;
             max-width: 900px;
-            height: 100dvh;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             border-left: 1px solid #222;
             border-right: 1px solid #222;
-            position: relative;
             background: #000;
         }
         @media (min-width: 769px) {
             .container {
                 height: 92dvh;
                 max-height: 800px;
+                position: relative;
+                left: auto;
+                transform: none;
                 border: 1px solid #333;
                 border-radius: 8px;
                 box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
@@ -182,12 +191,8 @@
             animation: fallStars 18s linear infinite;
         }
         @keyframes fallStars {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(300px);
-            }
+            0% { transform: translateY(0); }
+            100% { transform: translateY(300px); }
         }
         .edge-handle {
             position: absolute;
@@ -321,15 +326,10 @@
             position: relative;
             z-index: 1;
         }
-        .system-msg.join {
-            color: #22c55e;
-        }
-        .system-msg.leave {
-            color: #ef4444;
-        }
-        .system-msg.info {
-            color: #3b82f6;
-        }
+        .system-msg.join { color: #22c55e; }
+        .system-msg.leave { color: #ef4444; }
+        .system-msg.info { color: #3b82f6; }
+
         .input-area-wrapper {
             display: flex;
             flex-direction: column;
@@ -364,9 +364,8 @@
             cursor: pointer;
             padding: 0 4px;
         }
-        .reply-preview-close:hover {
-            color: #fff;
-        }
+        .reply-preview-close:hover { color: #fff; }
+        
         .input-area {
             display: flex;
             gap: 8px;
@@ -406,18 +405,14 @@
             transition: transform 0.3s ease-in-out;
             will-change: transform;
         }
-        .drawer.open {
-            transform: translateX(0);
-        }
+        .drawer.open { transform: translateX(0); }
         @keyframes peekAnimation {
             0% { transform: translateX(100%); }
             40% { transform: translateX(calc(100% - 35px)); }
             70% { transform: translateX(calc(100% - 35px)); }
             100% { transform: translateX(100%); }
         }
-        .drawer.peek {
-            animation: peekAnimation 0.8s ease-in-out;
-        }
+        .drawer.peek { animation: peekAnimation 0.8s ease-in-out; }
         .drawer-header {
             padding: 14px;
             border-bottom: 1px solid #fff;
@@ -438,9 +433,7 @@
             cursor: pointer;
             padding: 0 4px;
         }
-        .drawer-close-btn:active {
-            color: #888;
-        }
+        .drawer-close-btn:active { color: #888; }
         .user-list {
             flex: 1;
             overflow-y: auto;
@@ -458,9 +451,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        .user-item:active {
-            border-color: #fff;
-        }
+        .user-item:active { border-color: #fff; }
         .user-info-box {
             display: flex;
             align-items: center;
@@ -550,11 +541,20 @@
     let audioCtx = null;
     let masterGain = null;
 
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', () => {
-            document.getElementById('app-container').style.height = window.visualViewport.height + 'px';
-        });
+    // Viewport ve Kaydırma Düzeltmesi (Mobil Klavye Kaymalarını Önler)
+    function handleViewportChange() {
+        if (window.visualViewport) {
+            const container = document.getElementById('app-container');
+            container.style.height = window.visualViewport.height + 'px';
+            window.scrollTo(0, 0);
+        }
     }
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', handleViewportChange);
+        window.visualViewport.addEventListener('scroll', handleViewportChange);
+    }
+    window.addEventListener('scroll', () => window.scrollTo(0, 0));
 
     function initAudio() {
         if (!audioCtx) {
@@ -581,14 +581,11 @@
             const now = audioCtx.currentTime;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-
             osc.type = 'sine';
             osc.frequency.setValueAtTime(900, now);
             osc.frequency.exponentialRampToValueAtTime(450, now + 0.06);
-
             gain.gain.setValueAtTime(0.8, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.06);
-
             osc.connect(gain);
             gain.connect(masterGain);
             osc.start(now);
@@ -601,14 +598,11 @@
             const now = audioCtx.currentTime;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-
             osc.type = 'sine';
             osc.frequency.setValueAtTime(350, now);
             osc.frequency.exponentialRampToValueAtTime(750, now + 0.12);
-
             gain.gain.setValueAtTime(0.9, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
-
             osc.connect(gain);
             gain.connect(masterGain);
             osc.start(now);
@@ -619,7 +613,6 @@
     function playMessageSound() {
         playSound(() => {
             const now = audioCtx.currentTime;
-
             const osc1 = audioCtx.createOscillator();
             const gain1 = audioCtx.createGain();
             osc1.type = 'sine';
@@ -647,7 +640,6 @@
     function playJoinSound() {
         playSound(() => {
             const now = audioCtx.currentTime;
-
             const osc1 = audioCtx.createOscillator();
             const gain1 = audioCtx.createGain();
             osc1.type = 'sine';
@@ -675,7 +667,6 @@
     function playLeaveSound() {
         playSound(() => {
             const now = audioCtx.currentTime;
-
             const osc1 = audioCtx.createOscillator();
             const gain1 = audioCtx.createGain();
             osc1.type = 'sine';
@@ -718,13 +709,6 @@
         return escaped.replace(urlRegex, function(url) {
             return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + '</a>';
         });
-    }
-
-    function getClientTimestamp() {
-        const d = new Date();
-        const hrs = String(d.getHours()).padStart(2, '0');
-        const mins = String(d.getMinutes()).padStart(2, '0');
-        return hrs + ':' + mins;
     }
 
     function closeActiveMenu() {
@@ -771,7 +755,8 @@
 
     function keepInputFocus() {
         setTimeout(() => {
-            msgInput.focus();
+            msgInput.focus({ preventScroll: true });
+            window.scrollTo(0, 0);
         }, 10);
     }
 
@@ -907,7 +892,8 @@
                 myUsername = name;
                 loginScreen.classList.add('hidden');
                 chatScreen.classList.remove('hidden');
-                keepInputFocus();
+                
+                handleViewportChange();
 
                 setTimeout(() => {
                     drawer.classList.add('peek');
