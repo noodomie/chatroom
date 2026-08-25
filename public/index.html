@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ChatRoom</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,11 +18,12 @@
             -webkit-tap-highlight-color: transparent;
             direction: ltr;
         }
-        body {
+        html, body {
             background-color: #050505;
             color: #fff;
-            width: 100vw;
+            width: 100%;
             height: 100dvh;
+            max-height: -webkit-fill-available;
             overflow: hidden;
             display: flex;
             justify-content: center;
@@ -123,6 +124,29 @@
             position: relative;
             z-index: 2;
             background: rgba(0, 0, 0, 0.85);
+        }
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .audio-toggle-btn {
+            background: transparent;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+        }
+        .audio-toggle-btn:active {
+            opacity: 0.6;
+        }
+        .audio-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
         }
         .online-badge {
             font-size: 12px;
@@ -238,7 +262,6 @@
         }
         .msg-menu {
             position: absolute;
-            top: 28px;
             right: 6px;
             background: #000;
             border: 1px solid #fff;
@@ -461,7 +484,7 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="app-container">
     <div id="login-screen" class="screen">
         <div class="title">CHAT</div>
         <input type="text" id="username" placeholder="Enter username..." maxlength="16" autocomplete="off" spellcheck="false">
@@ -473,7 +496,17 @@
         <div class="stars-bg"></div>
         <div class="chat-header">
             <span>CHAT ROOM</span>
-            <div class="online-badge">ONLINE <span class="dot">•</span> <span id="online-count">0</span></div>
+            <div class="header-controls">
+                <button id="audio-toggle-btn" class="audio-toggle-btn" aria-label="Toggle Audio">
+                    <svg id="audio-icon-on" class="audio-icon" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                    </svg>
+                    <svg id="audio-icon-off" class="audio-icon hidden" viewBox="0 0 24 24">
+                        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                    </svg>
+                </button>
+                <div class="online-badge">ONLINE <span class="dot">•</span> <span id="online-count">0</span></div>
+            </div>
         </div>
         <div id="edge-handle" class="edge-handle"></div>
         <div id="messages"></div>
@@ -512,9 +545,16 @@
     let activeMenu = null;
     let currentReplyData = null;
     let currentEditData = null;
+    let isAudioMuted = false;
 
     let audioCtx = null;
     let masterGain = null;
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+            document.getElementById('app-container').style.height = window.visualViewport.height + 'px';
+        });
+    }
 
     function initAudio() {
         if (!audioCtx) {
@@ -528,9 +568,16 @@
         }
     }
 
-    function playClickSound() {
+    function playSound(fn) {
+        if (isAudioMuted) return;
         try {
             initAudio();
+            fn();
+        } catch (e) {}
+    }
+
+    function playClickSound() {
+        playSound(() => {
             const now = audioCtx.currentTime;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -546,12 +593,11 @@
             gain.connect(masterGain);
             osc.start(now);
             osc.stop(now + 0.06);
-        } catch (e) {}
+        });
     }
 
     function playSendSound() {
-        try {
-            initAudio();
+        playSound(() => {
             const now = audioCtx.currentTime;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -567,12 +613,11 @@
             gain.connect(masterGain);
             osc.start(now);
             osc.stop(now + 0.12);
-        } catch (e) {}
+        });
     }
 
     function playMessageSound() {
-        try {
-            initAudio();
+        playSound(() => {
             const now = audioCtx.currentTime;
 
             const osc1 = audioCtx.createOscillator();
@@ -596,12 +641,11 @@
             gain2.connect(masterGain);
             osc2.start(now + 0.08);
             osc2.stop(now + 0.22);
-        } catch (e) {}
+        });
     }
 
     function playJoinSound() {
-        try {
-            initAudio();
+        playSound(() => {
             const now = audioCtx.currentTime;
 
             const osc1 = audioCtx.createOscillator();
@@ -625,12 +669,11 @@
             gain2.connect(masterGain);
             osc2.start(now + 0.08);
             osc2.stop(now + 0.25);
-        } catch (e) {}
+        });
     }
 
     function playLeaveSound() {
-        try {
-            initAudio();
+        playSound(() => {
             const now = audioCtx.currentTime;
 
             const osc1 = audioCtx.createOscillator();
@@ -654,7 +697,7 @@
             gain2.connect(masterGain);
             osc2.start(now + 0.08);
             osc2.stop(now + 0.25);
-        } catch (e) {}
+        });
     }
 
     function triggerVibration() {
@@ -709,13 +752,42 @@
     const replyPreview = document.getElementById('reply-preview');
     const replyPreviewText = document.getElementById('reply-preview-text');
     const replyPreviewCloseBtn = document.getElementById('reply-preview-close-btn');
+    const audioToggleBtn = document.getElementById('audio-toggle-btn');
+    const audioIconOn = document.getElementById('audio-icon-on');
+    const audioIconOff = document.getElementById('audio-icon-off');
+
+    audioToggleBtn.onclick = () => {
+        isAudioMuted = !isAudioMuted;
+        if (isAudioMuted) {
+            audioIconOn.classList.add('hidden');
+            audioIconOff.classList.remove('hidden');
+        } else {
+            audioIconOn.classList.remove('hidden');
+            audioIconOff.classList.add('hidden');
+            playClickSound();
+        }
+        triggerVibration();
+    };
+
+    function keepInputFocus() {
+        setTimeout(() => {
+            msgInput.focus();
+        }, 10);
+    }
+
+    const preventBlurHandler = (e) => {
+        e.preventDefault();
+    };
+
+    sendBtn.onpointerdown = preventBlurHandler;
+    sendBtn.onmousedown = preventBlurHandler;
 
     function setReply(user, text) {
         clearEdit();
         currentReplyData = { user: user, text: text };
         replyPreviewText.innerHTML = 'Replying to <strong>' + escapeHtml(user) + '</strong>: ' + escapeHtml(text);
         replyPreview.classList.remove('hidden');
-        msgInput.focus();
+        keepInputFocus();
     }
 
     function clearReply() {
@@ -730,7 +802,7 @@
         msgInput.value = textSpan.innerText;
         replyPreviewText.innerHTML = 'Editing message...';
         replyPreview.classList.remove('hidden');
-        msgInput.focus();
+        keepInputFocus();
     }
 
     function clearEdit() {
@@ -835,7 +907,7 @@
                 myUsername = name;
                 loginScreen.classList.add('hidden');
                 chatScreen.classList.remove('hidden');
-                msgInput.focus();
+                keepInputFocus();
 
                 setTimeout(() => {
                     drawer.classList.add('peek');
@@ -908,6 +980,16 @@
                 const menu = document.createElement('div');
                 menu.className = 'msg-menu';
 
+                const rect = menuBtn.getBoundingClientRect();
+                const messagesRect = messagesDiv.getBoundingClientRect();
+                if (rect.bottom + 100 > messagesRect.bottom) {
+                    menu.style.bottom = '24px';
+                    menu.style.top = 'auto';
+                } else {
+                    menu.style.top = '28px';
+                    menu.style.bottom = 'auto';
+                }
+
                 const copyItem = document.createElement('div');
                 copyItem.className = 'msg-menu-item';
                 copyItem.innerText = 'COPY';
@@ -944,7 +1026,6 @@
                     deleteItem.innerText = 'DELETE';
                     deleteItem.onclick = () => {
                         playClickSound();
-                        div.remove();
                         socket.emit('delete message', { id: msgId });
                         closeActiveMenu();
                     };
@@ -973,9 +1054,6 @@
             playSendSound();
             triggerVibration();
             
-            currentEditData.textSpan.innerHTML = formatMessageText(trimmedMsg);
-            currentEditData.editedSpan.classList.remove('hidden');
-            
             socket.emit('edit message', {
                 id: currentEditData.id,
                 text: trimmedMsg
@@ -983,47 +1061,31 @@
 
             msgInput.value = '';
             clearEdit();
+            keepInputFocus();
             return;
         }
 
         const now = Date.now();
-        if (now - lastSendTime < 1000) return;
+        if (now - lastSendTime < 700) return;
 
         playSendSound();
         triggerVibration();
         lastSendTime = now;
 
-        const msgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-        const msgData = {
-            id: msgId,
-            type: 'user',
-            user: myUsername,
-            text: trimmedMsg,
-            time: getClientTimestamp()
-        };
-
-        if (currentReplyData) {
-            msgData.replyTo = {
-                user: currentReplyData.user,
-                text: currentReplyData.text
-            };
-        }
-
-        renderMessage(msgData);
-
         socket.emit('chat message', {
-            id: msgId,
             text: trimmedMsg,
             replyTo: currentReplyData
         });
 
         msgInput.value = '';
         clearReply();
+        keepInputFocus();
     }
 
     sendBtn.onclick = sendMessage;
     msgInput.onkeydown = (e) => {
         if (e.key === 'Enter') {
+            e.preventDefault();
             sendMessage();
         }
     };
@@ -1091,7 +1153,7 @@
                 if (u.name !== myUsername) {
                     msgInput.value = '@' + u.name + ' ' + msgInput.value;
                     closeDrawer();
-                    msgInput.focus();
+                    keepInputFocus();
                 }
             };
 
