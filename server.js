@@ -4,15 +4,19 @@ const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: { origin: false }
+});
 
 app.use(express.static('public'));
 
 const users = {};
-const lastMessageTime = {};
+const messages = {};
+const rateLimits = {};
 
 function isValidUsername(name) {
-    const regex = /^[a-zA-Z]{3,16}$/;
+    if (typeof name !== 'string') return false;
+    const regex = /^[a-zA-Z0-9_]{3,16}$/;
     return regex.test(name);
 }
 
@@ -29,13 +33,14 @@ function broadcastUserList() {
 }
 
 io.on('connection', (socket) => {
-    socket.on('join', (data, callback) => {
-        let username = '';
+    rateLimits[socket.id] = { lastTime: 0, count: 0, resetTime: Date.now() };
 
+    socket.on('join', (data, callback) => {
+        if (typeof callback !== 'function') return;
+
+        let username = '';
         if (typeof data === 'object' && data !== null) {
-            username = data.name || '';
-        } else {
-            username = data;
+            username = String(data.name || '').trim();
         }
 
         if (!isValidUsername(username)) {
@@ -53,12 +58,12 @@ io.on('connection', (socket) => {
         }
 
         users[socket.id] = { name: username };
-        lastMessageTime[socket.id] = 0;
         callback({ success: true });
 
         broadcastUserList();
 
         io.emit('chat message', {
+            id: 'sys_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
             type: 'system',
             event: 'join',
             text: username + ' joined the chat'
@@ -70,36 +75,83 @@ io.on('connection', (socket) => {
         if (!userObj) return;
 
         const now = Date.now();
-        if (lastMessageTime[socket.id] && now - lastMessageTime[socket.id] < 1000) {
-            return;
+        const userRate = rateLimits[socket.id];
+        
+        if (now - userRate.lastTime < 700) return;
+        if (now - userRate.resetTime > 10000) {
+            userRate.count = 0;
+            userRate.resetTime = now;
         }
-        lastMessageTime[socket.id] = now;
+        if (userRate.count >= 15) return;
 
-        let text = '';
+        userRate.lastTime = now;
+        userRate.count++;
+
+        if (typeof data !== 'object' || data === null) return;
+
+        const text = String(data.text || '').trim().substring(0, 500);
+        if (text === '') return;
+
+        const msgId = 'msg_' + now + '_' + Math.random().toString(36).substring(2, 7);
+        
         let replyTo = null;
-        if (typeof data === 'object' && data !== null) {
-            text = (data.text || '').substring(0, 500);
-            if (data.replyTo && typeof data.replyTo === 'object') {
-                replyTo = {
-                    user: String(data.replyTo.user || '').substring(0, 50),
-                    text: String(data.replyTo.text || '').substring(0, 200)
-                };
-            }
-        } else if (typeof data === 'string') {
-            text = data.substring(0, 500);
+        if (data.replyTo && typeof data.replyTo === 'object') {
+            replyTo = {
+                user: String(data.replyTo.user || '').substring(0, 50),
+                text: String(data.replyTo.text || '').substring(0, 200)
+            };
         }
 
-        if (text.trim() !== '') {
-            const messageData = {
-                type: 'user',
-                user: userObj.name,
-                text: text,
-                time: getTimestamp()
-            };
-            if (replyTo) {
-                messageData.replyTo = replyTo;
-            }
-            socket.broadcast.emit('chat message', messageData);
+        const messageData = {
+            id: msgId,
+            type: 'user',
+            user: userObj.name,
+            text: text,
+            time: getTimestamp()
+        };
+
+        if (replyTo) {
+            messageData.replyTo = replyTo;
+        }
+
+        messages[msgId] = {
+            ownerSocketId: socket.id,
+            ownerName: userObj.name,
+            text: text
+        };
+
+        io.emit('chat message', messageData);
+    });
+
+    socket.on('edit message', (data) => {
+        const userObj = users[socket.id];
+        if (!userObj || typeof data !== 'object' || data === null) return;
+
+        const msgId = String(data.id || '');
+        const newText = String(data.text || '').trim().substring(0, 500);
+
+        if (newText === '') return;
+
+        const existing = messages[msgId];
+        if (existing && existing.ownerSocketId === socket.id && existing.ownerName === userObj.name) {
+            existing.text = newText;
+            io.emit('edit message', {
+                id: msgId,
+                text: newText
+            });
+        }
+    });
+
+    socket.on('delete message', (data) => {
+        const userObj = users[socket.id];
+        if (!userObj || typeof data !== 'object' || data === null) return;
+
+        const msgId = String(data.id || '');
+        const existing = messages[msgId];
+
+        if (existing && existing.ownerSocketId === socket.id && existing.ownerName === userObj.name) {
+            delete messages[msgId];
+            io.emit('delete message', { id: msgId });
         }
     });
 
@@ -112,9 +164,10 @@ io.on('connection', (socket) => {
         if (userObj) {
             const username = userObj.name;
             delete users[socket.id];
-            delete lastMessageTime[socket.id];
+            delete rateLimits[socket.id];
             broadcastUserList();
             io.emit('chat message', {
+                id: 'sys_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
                 type: 'system',
                 event: 'leave',
                 text: username + ' left the chat'
